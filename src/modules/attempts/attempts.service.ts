@@ -9,9 +9,18 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { SubmitAnswerDto } from './dto';
 import * as crypto from 'crypto';
 
+import { EnergyService } from '../energy/energy.service';
+import { StatsService } from '../stats/stats.service';
+import { LeaderboardService } from '../leaderboards/leaderboard.service';
+
 @Injectable()
 export class AttemptsService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly energyService: EnergyService,
+    private readonly statsService: StatsService,
+    private readonly leaderboardService: LeaderboardService,
+  ) { }
 
   async startAttempt(
     quizId: number,
@@ -60,6 +69,9 @@ export class AttemptsService {
         );
       }
     }
+
+    // Consume Energy
+    await this.energyService.consumeEnergy(userId);
 
 
     const maxScore = quiz.questions.reduce((sum, q) => sum + q.points, 0);
@@ -276,7 +288,21 @@ export class AttemptsService {
       },
     });
 
-    this.updateLeaderboard(userId, attempt.quiz.id, attempt.score);
+    // Update Stats
+    await this.statsService.updateStats(userId, {
+      xp: attempt.score, // 1 XP per point? Or custom logic? Let's assume score = XP for now
+      gems: passed ? 10 : 1, // 10 gems for passing, 1 for trying
+    });
+    await this.statsService.updateStreak(userId);
+
+    // Update Leaderboard & Top 3
+    // this.updateLeaderboard(userId, attempt.quiz.id, attempt.score); // Old method, remove or keep logging?
+
+    // Check rank for Top 3 finish
+    const rank = await this.leaderboardService.getQuizRank(attempt.quiz.id, attempt.score);
+    if (rank <= 3) {
+      await this.statsService.incrementTop3(userId);
+    }
 
     return {
       attemptId,

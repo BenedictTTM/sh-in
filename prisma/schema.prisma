@@ -45,12 +45,47 @@ model User {
   passwordResetTokens PasswordResetToken[]
   quizzes             Quiz[]
   attempts            Attempt[]
+  stats               UserStats?
 
   @@index([email])
   @@index([googleId])
   @@index([githubId])
   @@index([createdAt])
   @@map("users")
+}
+
+// ============================================================================
+// USER STATS MODEL
+// ============================================================================
+model UserStats {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique @map("user_id")
+  
+  // Progression
+  xp        Int      @default(0)
+  gems      Int      @default(0)
+  
+  // Streaks
+  dayStreak      Int      @default(0) @map("day_streak")
+  lastActivityAt DateTime? @map("last_activity_at")
+  
+  // Achievements
+  top3Finishes   Int      @default(0) @map("top_3_finishes")
+  
+  // Energy System
+  energy         Int      @default(5)
+  maxEnergy      Int      @default(5) @map("max_energy")
+  lastEnergyRefillAt DateTime @default(now()) @map("last_energy_refill_at")
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_stats")
 }
 
 // ============================================================================
