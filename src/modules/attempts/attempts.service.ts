@@ -11,7 +11,7 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class AttemptsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async startAttempt(
     quizId: number,
@@ -61,15 +61,6 @@ export class AttemptsService {
       }
     }
 
-    const inProgressAttempt = quiz.attempts.find(
-      (a) => a.status === 'in_progress',
-    );
-
-    if (inProgressAttempt) {
-      throw new ConflictException(
-        `You already have an in-progress attempt (ID: ${inProgressAttempt.id}). Please complete or abandon it first.`,
-      );
-    }
 
     const maxScore = quiz.questions.reduce((sum, q) => sum + q.points, 0);
     const attemptToken = this.generateAttemptToken(quizId, userId);
@@ -350,18 +341,35 @@ export class AttemptsService {
       ? attempt.score >= attempt.quiz.passingScore
       : true;
 
+    const timeTaken =
+      attempt.finishedAt && attempt.startedAt
+        ? Math.floor(
+          (new Date(attempt.finishedAt).getTime() -
+            new Date(attempt.startedAt).getTime()) /
+          1000,
+        )
+        : 0;
+
+    const percentage =
+      attempt.maxScore > 0 ? (attempt.score / attempt.maxScore) * 100 : 0;
+
     return {
+      id: attempt.id,
       attemptId: attempt.id,
       quiz: attempt.quiz,
       status: attempt.status,
       score: attempt.score,
       maxScore: attempt.maxScore,
+      totalPoints: attempt.maxScore,
+      percentage,
       passed,
       passingScore: attempt.quiz.passingScore,
       totalQuestions,
       correctAnswers,
       startedAt: attempt.startedAt,
       finishedAt: attempt.finishedAt,
+      completedAt: attempt.finishedAt,
+      timeTaken,
       expiresAt: attempt.expiresAt,
       answers: attempt.answers.map((answer) => ({
         questionId: answer.question.id,
