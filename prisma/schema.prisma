@@ -65,6 +65,9 @@ model UserStats {
   xp        Int      @default(0)
   gems      Int      @default(0)
   
+  // Premium Currency
+  diamonds  Int      @default(0)
+  
   // Streaks
   dayStreak      Int      @default(0) @map("day_streak")
   lastActivityAt DateTime? @map("last_activity_at")
@@ -322,4 +325,38 @@ model Answer {
   @@index([questionId])
   @@index([idempotencyKey])
   @@map("answers")
+}
+
+// ============================================================================
+// CURRENCY TRANSACTION MODEL
+// ============================================================================
+// Audit trail for all currency movements (energy, diamonds, gems)
+model CurrencyTransaction {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  
+  // Transaction Details
+  type        String   @db.VarChar(50) // energy_refill, energy_consume, diamond_purchase, diamond_spend, etc.
+  currency    String   @db.VarChar(20) // energy, diamonds, gems
+  amount      Int      // positive for credit, negative for debit
+  
+  // Balance Tracking
+  balanceBefore Int    @map("balance_before")
+  balanceAfter  Int    @map("balance_after")
+  
+  // Metadata
+  reason      String?  @db.VarChar(255) // quiz_play, shop_purchase, refill, etc.
+  metadata    Json?    // additional context (quiz_id, product_id, etc.)
+  
+  // Idempotency
+  idempotencyKey String? @unique @map("idempotency_key") @db.VarChar(255)
+  
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  @@index([userId])
+  @@index([type])
+  @@index([currency])
+  @@index([createdAt])
+  @@map("currency_transactions")
 }

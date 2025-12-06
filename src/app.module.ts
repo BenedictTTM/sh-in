@@ -8,6 +8,8 @@ import { QuizzesModule } from './modules/quizzes/quizzes.module';
 import { AttemptsModule } from './modules/attempts/attempts.module';
 import { LeaderboardsModule } from './modules/leaderboards/leaderboards.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { EnergyModule } from './modules/energy/energy.module';
+import { DiamondsModule } from './modules/diamonds/diamonds.module';
 
 @Module({
   imports: [
@@ -17,8 +19,10 @@ import { AdminModule } from './modules/admin/admin.module';
     AttemptsModule,
     LeaderboardsModule,
     AdminModule,
+    EnergyModule,
+    DiamondsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
-export class AppModule {}
+export class AppModule { }
