@@ -9,7 +9,7 @@ import { CreateQuizDto, UpdateQuizDto } from './dto';
 
 @Injectable()
 export class QuizzesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async findAllPublished() {
     return this.prisma.quiz.findMany({
@@ -92,52 +92,50 @@ export class QuizzesService {
   async create(createQuizDto: CreateQuizDto, userId: number) {
     this.validateQuizStructure(createQuizDto);
 
-    return this.prisma.$transaction(async (tx) => {
-      const maxScore = createQuizDto.questions.reduce(
-        (sum, q) => sum + (q.points || 1),
-        0,
-      );
+    const maxScore = createQuizDto.questions.reduce(
+      (sum, q) => sum + (q.points || 1),
+      0,
+    );
 
-      const quiz = await tx.quiz.create({
-        data: {
-          title: createQuizDto.title,
-          description: createQuizDto.description,
-          timeLimit: createQuizDto.timeLimit,
-          passingScore:
-            createQuizDto.passingScore || Math.floor(maxScore * 0.7),
-          maxAttempts: createQuizDto.maxAttempts,
-          createdById: userId,
-          questions: {
-            create: createQuizDto.questions.map((question, qIndex) => ({
-              text: question.text,
-              explanation: question.explanation,
-              points: question.points || 1,
-              order: question.order ?? qIndex,
-              type: 'single_choice',
-              choices: {
-                create: question.choices.map((choice, cIndex) => ({
-                  text: choice.text,
-                  order: choice.order ?? cIndex,
-                  isCorrect: question.correctChoiceIndexes.includes(cIndex),
-                })),
-              },
-            })),
+    const quiz = await this.prisma.quiz.create({
+      data: {
+        title: createQuizDto.title,
+        description: createQuizDto.description,
+        timeLimit: createQuizDto.timeLimit,
+        passingScore:
+          createQuizDto.passingScore || Math.floor(maxScore * 0.7),
+        maxAttempts: createQuizDto.maxAttempts,
+        createdById: userId,
+        questions: {
+          create: createQuizDto.questions.map((question, qIndex) => ({
+            text: question.text,
+            explanation: question.explanation,
+            points: question.points || 1,
+            order: question.order ?? qIndex,
+            type: 'single_choice',
+            choices: {
+              create: question.choices.map((choice, cIndex) => ({
+                text: choice.text,
+                order: choice.order ?? cIndex,
+                isCorrect: question.correctChoiceIndexes.includes(cIndex),
+              })),
+            },
+          })),
+        },
+      },
+      include: {
+        questions: {
+          include: {
+            choices: true,
+          },
+          orderBy: {
+            order: 'asc',
           },
         },
-        include: {
-          questions: {
-            include: {
-              choices: true,
-            },
-            orderBy: {
-              order: 'asc',
-            },
-          },
-        },
-      });
-
-      return quiz;
+      },
     });
+
+    return quiz;
   }
 
   async update(quizId: number, updateQuizDto: UpdateQuizDto, userId: number) {
