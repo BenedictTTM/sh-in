@@ -45,7 +45,7 @@ async function main() {
                 title: quizTitle,
                 description: "A second set of original practice questions inspired by the WACCES/BECE exam style.",
                 timeLimit: 3600,
-                passingScore: 50,
+                passingScore: 10,
                 maxAttempts: 3,
                 isPublished: true,
                 createdById: user.id,

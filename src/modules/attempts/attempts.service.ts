@@ -313,7 +313,7 @@ export class AttemptsService {
       ? attempt.score >= attempt.quiz.passingScore
       : true;
 
-    console.log(`[AttemptsService] Finishing attempt ${attemptId} for user ${userId}. Score: ${attempt.score}, Passed: ${passed}`);
+    console.log(`[AttemptsService] Finishing attempt ${attemptId} for user ${userId}. Score: ${attempt.score}/${attempt.maxScore}, Passing Score: ${attempt.quiz.passingScore}, Passed: ${passed}`);
 
     await this.prisma.attempt.update({
       where: { id: attemptId },

@@ -93,16 +93,19 @@ export class StatsService {
         console.log(`[StatsService] Quiz ${quizId} is Level ${levelNumber}. User current level: ${stats.currentLevel}`);
 
         // 3. If the user just completed their "current level", unlock the next one
-        if (levelNumber === stats.currentLevel) {
-            console.log(`[StatsService] Level match! Incrementing user level to ${stats.currentLevel + 1}`);
+        // 3. If the user completes a level >= their current level, bump them up.
+        // E.g. User is Level 1. Completes Quiz 2 (Level 2). Should become Level 3.
+        if (levelNumber >= stats.currentLevel) {
+            const newLevel = levelNumber + 1;
+            console.log(`[StatsService] User completed Level ${levelNumber} (Current: ${stats.currentLevel}). Updating to Level ${newLevel}.`);
             await this.prisma.userStats.update({
                 where: { userId },
                 data: {
-                    currentLevel: { increment: 1 }
+                    currentLevel: newLevel
                 }
             });
         } else {
-            console.log(`[StatsService] Level mismatch. No update.`);
+            console.log(`[StatsService] Quiz Level ${levelNumber} < Current Level ${stats.currentLevel}. No update needed.`);
         }
     }
 }
