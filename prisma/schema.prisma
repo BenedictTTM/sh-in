@@ -46,6 +46,7 @@ model User {
   quizzes             Quiz[]
   attempts            Attempt[]
   stats               UserStats?
+  activityLogs        UserActivityLog[]
 
   @@index([email])
   @@index([googleId])
@@ -72,8 +73,9 @@ model UserStats {
   dayStreak      Int      @default(0) @map("day_streak")
   lastActivityAt DateTime? @map("last_activity_at")
   
-  // Achievements
+  // Achievement
   top3Finishes   Int      @default(0) @map("top_3_finishes")
+  totalStudyTimeSeconds BigInt @default(0) @map("total_study_time_seconds")
   
   // Energy System
   energy         Int      @default(5)
@@ -89,6 +91,32 @@ model UserStats {
 
   @@index([userId])
   @@map("user_stats")
+}
+
+// ============================================================================
+// USER ACTIVITY LOG MODEL
+// ============================================================================
+// Heatmap data tracking daily activity
+model UserActivityLog {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @map("user_id")
+  activityDate    DateTime @map("activity_date") @db.Date // Store only date part
+  
+  // Metrics
+  studySeconds    Int      @default(0) @map("study_seconds")
+  quizzesSolved   Int      @default(0) @map("quizzes_solved")
+  
+  // Timestamps
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, activityDate]) // One log per user per day
+  @@index([userId])
+  @@index([activityDate])
+  @@map("user_activity_logs")
 }
 
 // ============================================================================

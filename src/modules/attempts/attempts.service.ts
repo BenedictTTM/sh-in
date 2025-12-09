@@ -12,6 +12,7 @@ import * as crypto from 'crypto';
 import { EnergyService } from '../energy/energy.service';
 import { StatsService } from '../stats/stats.service';
 import { LeaderboardService } from '../leaderboards/leaderboard.service';
+import { TransactionReason } from '../../common/enums/currency.enum';
 
 @Injectable()
 export class AttemptsService {
@@ -71,7 +72,10 @@ export class AttemptsService {
     }
 
     // Consume Energy
-    await this.energyService.consumeEnergy(userId);
+    await this.energyService.consumeEnergy(userId, {
+      amount: 1,
+      reason: TransactionReason.QUIZ_PLAY,
+    });
 
 
     const maxScore = quiz.questions.reduce((sum, q) => sum + q.points, 0);
