@@ -6,10 +6,13 @@ import { EnergyModule } from '../energy/energy.module';
 import { StatsModule } from '../stats/stats.module';
 import { LeaderboardsModule } from '../leaderboards/leaderboards.module';
 
+import { AuthModule } from '../auth/auth.module';
+
 @Module({
-  imports: [EnergyModule, StatsModule, LeaderboardsModule],
+  imports: [EnergyModule, StatsModule, LeaderboardsModule, AuthModule],
   controllers: [AttemptsController],
   providers: [AttemptsService, PrismaService],
   exports: [AttemptsService], // Export for use in other modules
 })
+
 export class AttemptsModule { }

@@ -10,13 +10,15 @@ import {
     HttpCode,
     HttpStatus,
     BadRequestException,
+    UnauthorizedException,
+    UseGuards, // Ensure UseGuards is imported
 } from '@nestjs/common';
 import { AttemptsService } from './attempts.service';
 import { SubmitAnswerDto } from './dto';
-
+import { JwtAuthGuard } from '../../common/guards';
 
 @Controller({ version: '1' })
-// @UseGuards(JwtAuthGuard) // Uncomment when guard is implemented
+@UseGuards(JwtAuthGuard)
 export class AttemptsController {
     constructor(private readonly attemptsService: AttemptsService) { }
 
@@ -27,7 +29,7 @@ export class AttemptsController {
         @Param('quizId', ParseIntPipe) quizId: number,
         @Request()
         req: {
-            user?: { id: number };
+            user: { id: number };
             headers: {
                 'user-agent'?: string;
                 'x-forwarded-for'?: string;
@@ -37,7 +39,7 @@ export class AttemptsController {
             socket?: { remoteAddress?: string };
         },
     ) {
-        const userId = req.user?.id || 1; // TODO: Get from authenticated user
+        const userId = req.user.id;
         const ipAddress = this.extractIpAddress(req);
         const userAgent = req.headers['user-agent'];
 
@@ -74,13 +76,13 @@ export class AttemptsController {
     async finishAttempt(
         @Param('attemptId', ParseIntPipe) attemptId: number,
         @Headers('x-attempt-token') attemptToken: string,
-        @Request() req: { user?: { id: number } },
+        @Request() req: { user: { id: number } },
     ) {
         if (!attemptToken) {
             throw new BadRequestException('X-Attempt-Token header is required');
         }
 
-        const userId = req.user?.id || 1; // TODO: Get from authenticated user
+        const userId = req.user.id;
 
         return this.attemptsService.finishAttempt(attemptId, attemptToken, userId);
     }
@@ -89,9 +91,9 @@ export class AttemptsController {
     @Get('attempts/:attemptId/result')
     async getResult(
         @Param('attemptId', ParseIntPipe) attemptId: number,
-        @Request() req: { user?: { id: number } },
+        @Request() req: { user: { id: number } },
     ) {
-        const userId = req.user?.id || 1; // TODO: Get from authenticated user
+        const userId = req.user.id;
         return this.attemptsService.getAttemptResult(attemptId, userId);
     }
 

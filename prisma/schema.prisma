@@ -65,6 +65,7 @@ model UserStats {
   // Progression
   xp        Int      @default(0)
   gems      Int      @default(0)
+  currentLevel Int   @default(1) @map("current_level")
   
   // Premium Currency
   diamonds  Int      @default(0)

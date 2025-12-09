@@ -11,8 +11,8 @@ import { CreateQuizDto, UpdateQuizDto } from './dto';
 export class QuizzesService {
   constructor(private readonly prisma: PrismaService) { }
 
-  async findAllPublished() {
-    return this.prisma.quiz.findMany({
+  async findAllPublished(userId?: number) {
+    const quizzes = await this.prisma.quiz.findMany({
       where: {
         isPublished: true,
         deletedAt: null,
@@ -31,11 +31,30 @@ export class QuizzesService {
             questions: true,
           },
         },
+        // If userId is provided, check if they have completed it
+        ...(userId && {
+          attempts: {
+            where: {
+              userId,
+              status: 'completed',
+            },
+            select: {
+              id: true,
+            },
+            take: 1,
+          },
+        }),
       },
       orderBy: {
-        publishedAt: 'desc',
+        publishedAt: 'asc', // Changed to asc so Level 1 is first
       },
     });
+
+    return quizzes.map((quiz: any) => ({
+      ...quiz,
+      isCompleted: userId ? quiz.attempts?.length > 0 : false,
+      attempts: undefined, // specific attempts info not needed in list
+    }));
   }
 
   async findById(quizId: number, userId?: number) {

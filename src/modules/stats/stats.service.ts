@@ -69,4 +69,40 @@ export class StatsService {
             },
         });
     }
+
+    async updateLevel(userId: number, quizId: number) {
+        console.log(`[StatsService] Updating level for user ${userId} after finishing quiz ${quizId}`);
+        // 1. Get current stats
+        const stats = await this.getStats(userId);
+
+        // 2. Find the "Level Number" of this quiz
+        // We assume levels are ordered by publishedAt asc
+        const allQuizzes = await this.prisma.quiz.findMany({
+            where: { isPublished: true, deletedAt: null },
+            orderBy: { publishedAt: 'asc' },
+            select: { id: true }
+        });
+
+        const quizIndex = allQuizzes.findIndex(q => q.id === quizId);
+        if (quizIndex === -1) {
+            console.log(`[StatsService] Quiz ${quizId} not found in published list.`);
+            return;
+        }
+
+        const levelNumber = quizIndex + 1;
+        console.log(`[StatsService] Quiz ${quizId} is Level ${levelNumber}. User current level: ${stats.currentLevel}`);
+
+        // 3. If the user just completed their "current level", unlock the next one
+        if (levelNumber === stats.currentLevel) {
+            console.log(`[StatsService] Level match! Incrementing user level to ${stats.currentLevel + 1}`);
+            await this.prisma.userStats.update({
+                where: { userId },
+                data: {
+                    currentLevel: { increment: 1 }
+                }
+            });
+        } else {
+            console.log(`[StatsService] Level mismatch. No update.`);
+        }
+    }
 }

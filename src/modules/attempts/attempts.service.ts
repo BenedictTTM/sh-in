@@ -59,6 +59,35 @@ export class AttemptsService {
       throw new ForbiddenException('Quiz is not published');
     }
 
+    // Verify Previous Level Completion
+    // distinct: Check if there's a quiz published BEFORE this one that must be completed first
+    const previousQuiz = await this.prisma.quiz.findFirst({
+      where: {
+        isPublished: true,
+        deletedAt: null,
+        publishedAt: {
+          lt: quiz.publishedAt || new Date()
+        }
+      },
+      orderBy: {
+        publishedAt: 'desc'
+      }
+    });
+
+    if (previousQuiz) {
+      const isPreviousCompleted = await this.prisma.attempt.count({
+        where: {
+          quizId: previousQuiz.id,
+          userId,
+          status: 'completed'
+        }
+      });
+
+      if (isPreviousCompleted === 0) {
+        throw new ForbiddenException(`You must complete "${previousQuiz.title}" before starting this level.`);
+      }
+    }
+
     if (quiz.maxAttempts) {
       const completedAttempts = quiz.attempts.filter(
         (a) => a.status === 'completed',
@@ -284,6 +313,8 @@ export class AttemptsService {
       ? attempt.score >= attempt.quiz.passingScore
       : true;
 
+    console.log(`[AttemptsService] Finishing attempt ${attemptId} for user ${userId}. Score: ${attempt.score}, Passed: ${passed}`);
+
     await this.prisma.attempt.update({
       where: { id: attemptId },
       data: {
@@ -297,6 +328,14 @@ export class AttemptsService {
       xp: attempt.score, // 1 XP per point? Or custom logic? Let's assume score = XP for now
       gems: passed ? 10 : 1, // 10 gems for passing, 1 for trying
     });
+
+    if (passed) {
+      console.log(`[AttemptsService] User passed. Updating level for quiz ${attempt.quiz.id}...`);
+      await this.statsService.updateLevel(userId, attempt.quiz.id);
+    } else {
+      console.log(`[AttemptsService] User failed. Level not updated.`);
+    }
+
     await this.statsService.updateStreak(userId);
 
     // Update Leaderboard & Top 3
