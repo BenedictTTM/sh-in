@@ -45,8 +45,8 @@ export class LeaderboardService {
                 id: true,
                 firstName: true,
                 lastName: true,
-                email: true, // You might want to exclude this depending on privacy requirements
-                // Add avatar URL if available in schema
+                school: true,
+                profilePicture: true,
             },
         });
 
@@ -55,15 +55,20 @@ export class LeaderboardService {
             const user = users.find((u) => u.id === entry.userId);
             return {
                 rank: index + 1,
-                userId: entry.userId,
                 score: entry._sum.score || 0,
                 user: user
                     ? {
+                        id: user.id,
                         firstName: user.firstName,
                         lastName: user.lastName,
-                        // avatar: user.avatar,
+                        school: user.school || undefined,
+                        profilePicture: user.profilePicture || undefined,
                     }
-                    : null,
+                    : {
+                        id: entry.userId,
+                        firstName: 'Unknown',
+                        lastName: 'User',
+                    },
             };
         });
     }

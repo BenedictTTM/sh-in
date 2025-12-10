@@ -77,4 +77,30 @@ describe('UsersService', () => {
             expect(result.globalRank).toEqual(-1);
         });
     });
+
+    describe('getUserProfile', () => {
+        it('should return user profile data', async () => {
+            mockPrismaService.user.findUnique.mockResolvedValue({
+                id: 1,
+                firstName: 'John',
+                lastName: 'Doe',
+                school: 'MIT',
+                profilePicture: 'url',
+            });
+
+            const result = await service.getUserProfile(1);
+
+            expect(result).toEqual({
+                name: 'John Doe',
+                school: 'MIT',
+                profilePicture: 'url',
+            });
+        });
+
+        it('should throw NotFoundException if user does not exist', async () => {
+            mockPrismaService.user.findUnique.mockResolvedValue(null);
+
+            await expect(service.getUserProfile(999)).rejects.toThrow('User not found');
+        });
+    });
 });

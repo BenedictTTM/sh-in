@@ -1,5 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { UserProfileDto } from './dto/user-profile.dto';
 
 @Injectable()
 export class UsersService {
@@ -153,6 +154,33 @@ export class UsersService {
             ...stats,
             globalRank: -1, // New user
             quizzesSolved: 0
+        };
+    }
+
+    /**
+     * Get user profile (name, school, picture)
+     */
+    async getUserProfile(userId: number): Promise<UserProfileDto> {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                firstName: true,
+                lastName: true,
+                school: true,
+                profilePicture: true,
+                email: true,
+            },
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        return {
+            name: `${user.firstName} ${user.lastName}`,
+            school: user.school,
+            profilePicture: user.profilePicture,
+            email: user.email,
         };
     }
 }

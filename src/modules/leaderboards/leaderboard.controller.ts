@@ -7,14 +7,24 @@ import {
     DefaultValuePipe,
     UseGuards,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { LeaderboardService } from './leaderboard.service';
-// import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; // Assuming you have this
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { LeaderboardEntryDto } from './dto/leaderboard-entry.dto';
+import { UserRankDto } from './dto/user-rank.dto';
 
+@ApiTags('Leaderboards')
 @Controller('leaderboards')
 export class LeaderboardController {
     constructor(private readonly leaderboardService: LeaderboardService) { }
 
     @Get('global')
+    @ApiOperation({ summary: 'Get global leaderboard for current month' })
+    @ApiResponse({
+        status: 200,
+        description: 'Top users by score',
+        type: [LeaderboardEntryDto],
+    })
     async getGlobalLeaderboard(
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
     ) {
@@ -22,10 +32,14 @@ export class LeaderboardController {
     }
 
     @Get('me')
-    // @UseGuards(JwtAuthGuard) // Uncomment when you want to enforce auth
+    @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'Get current user rank' })
+    @ApiResponse({
+        status: 200,
+        description: 'User rank details',
+        type: UserRankDto,
+    })
     async getUserRank(@Request() req: any) {
-        // Fallback to userId 1 for testing if no auth guard is active or user not attached
-        const userId = req.user?.id || 1;
-        return this.leaderboardService.getUserRank(userId);
+        return this.leaderboardService.getUserRank(req.user.id);
     }
 }
