@@ -323,6 +323,27 @@ export class AttemptsService {
       },
     });
 
+    // Update Daily Contributions
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    await this.prisma.userActivityLog.upsert({
+      where: {
+        userId_activityDate: {
+          userId,
+          activityDate: today,
+        },
+      },
+      update: {
+        quizzesSolved: { increment: 1 },
+      },
+      create: {
+        userId,
+        activityDate: today,
+        quizzesSolved: 1,
+      },
+    });
+
     // Update Stats
     await this.statsService.updateStats(userId, {
       xp: attempt.score, // 1 XP per point? Or custom logic? Let's assume score = XP for now

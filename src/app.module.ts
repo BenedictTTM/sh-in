@@ -10,6 +10,7 @@ import { LeaderboardsModule } from './modules/leaderboards/leaderboards.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { EnergyModule } from './modules/energy/energy.module';
 import { DiamondsModule } from './modules/diamonds/diamonds.module';
+import { ContributionsModule } from './modules/contributions/contributions.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { DiamondsModule } from './modules/diamonds/diamonds.module';
     AdminModule,
     EnergyModule,
     DiamondsModule,
+    ContributionsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
