@@ -14,7 +14,7 @@ export class RefreshTokenService {
   constructor(
     private readonly tokenService: TokenService,
     private readonly prisma: PrismaService,
-  ) {}
+  ) { }
 
   async refreshAccessToken(refreshToken: string): Promise<{
     access_token: string;
@@ -62,7 +62,7 @@ export class RefreshTokenService {
       return {
         access_token: newTokens.access_token,
         refresh_token: newTokens.refresh_token,
-        expires_in: 900,
+        expires_in: 3600,
       };
     } catch (error) {
       return this.handleRefreshError(error);

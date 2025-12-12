@@ -32,14 +32,14 @@ import * as crypto from 'crypto';
 @Injectable()
 export class TokenService {
   private readonly logger = new Logger(TokenService.name);
-  private readonly accessTokenExpiry = '15m';
-  private readonly refreshTokenExpiry = '7d';
+  private readonly accessTokenExpiry = '2h';
+  private readonly refreshTokenExpiry = '30d';
 
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
-  ) {}
+  ) { }
 
   /**
    * Generate Access and Refresh Tokens
@@ -208,7 +208,7 @@ export class TokenService {
     try {
       const tokenHash = this.hashToken(refreshToken);
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+      expiresAt.setDate(expiresAt.getDate() + 30); // 30 days from now
 
       // Revoke old tokens if user has more than 5 active sessions
       await this.cleanupOldTokens(userId, 5);
