@@ -7,9 +7,10 @@ import { StatsModule } from '../stats/stats.module';
 import { LeaderboardsModule } from '../leaderboards/leaderboards.module';
 
 import { AuthModule } from '../auth/auth.module';
+import { DiamondsModule } from '../diamonds/diamonds.module';
 
 @Module({
-  imports: [EnergyModule, StatsModule, LeaderboardsModule, AuthModule],
+  imports: [EnergyModule, StatsModule, LeaderboardsModule, AuthModule, DiamondsModule],
   controllers: [AttemptsController],
   providers: [AttemptsService, PrismaService],
   exports: [AttemptsService], // Export for use in other modules

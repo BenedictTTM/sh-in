@@ -13,6 +13,7 @@ import { EnergyService } from '../energy/energy.service';
 import { StatsService } from '../stats/stats.service';
 import { LeaderboardService } from '../leaderboards/leaderboard.service';
 import { TransactionReason } from '../../common/enums/currency.enum';
+import { DiamondsService } from '../diamonds/diamonds.service';
 
 @Injectable()
 export class AttemptsService {
@@ -21,6 +22,7 @@ export class AttemptsService {
     private readonly energyService: EnergyService,
     private readonly statsService: StatsService,
     private readonly leaderboardService: LeaderboardService,
+    private readonly diamondsService: DiamondsService,
   ) { }
 
   async startAttempt(
@@ -102,7 +104,7 @@ export class AttemptsService {
 
     // Consume Energy
     await this.energyService.consumeEnergy(userId, {
-      amount: 1,
+      amount: 5, // Deduct 5 energy bars per quiz
       reason: TransactionReason.QUIZ_PLAY,
     });
 
@@ -366,6 +368,16 @@ export class AttemptsService {
     const rank = await this.leaderboardService.getQuizRank(attempt.quiz.id, attempt.score);
     if (rank <= 3) {
       await this.statsService.incrementTop3(userId);
+    }
+
+    // Grant Diamond for Perfect Score
+    if (attempt.score === attempt.maxScore && attempt.maxScore > 0) {
+      await this.diamondsService.grantDiamonds(userId, 1, TransactionReason.REWARD, {
+        quizId: attempt.quiz.id,
+        score: attempt.score,
+        details: 'Perfect Score Reward'
+      });
+      console.log(`[AttemptsService] User ${userId} achieved perfect score! Granted 1 Diamond.`);
     }
 
     return {
