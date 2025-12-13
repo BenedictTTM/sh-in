@@ -1,16 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class GamemodeService {
-    // Placeholder for game state management
     private activeGames = new Map<string, any>();
+
+    constructor(private prisma: PrismaService) { }
 
     createGame(gameId: string) {
         this.activeGames.set(gameId, { players: [], status: 'waiting' });
         return { gameId, status: 'waiting' };
     }
 
-    joinGame(gameId: string, playerId: string) {
+    async joinGame(gameId: string, playerId: string) {
         const game = this.activeGames.get(gameId);
         if (game) {
             if (!game.players.includes(playerId)) {
@@ -18,10 +20,25 @@ export class GamemodeService {
             }
             if (game.players.length === 2) {
                 game.status = 'playing';
-                return { ...game, gameStarted: true };
+                const quizId = await this.getRandomQuizId();
+                return { ...game, gameStarted: true, quizId };
             }
             return game;
         }
         return null;
+    }
+
+    private async getRandomQuizId(): Promise<number> {
+        // Fetch all quiz IDs
+        const quizzes = await this.prisma.quiz.findMany({
+            select: { id: true },
+        });
+
+        if (quizzes.length === 0) {
+            return 1; // Fallback to ID 1 if no quizzes
+        }
+
+        const randomIndex = Math.floor(Math.random() * quizzes.length);
+        return quizzes[randomIndex].id;
     }
 }

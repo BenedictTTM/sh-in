@@ -39,10 +39,10 @@ export class GamemodeGateway
     }
 
     @SubscribeMessage('joinGame')
-    handleJoinGame(@MessageBody() data: { gameId: string; playerId: string }, @ConnectedSocket() client: Socket) {
+    async handleJoinGame(@MessageBody() data: { gameId: string; playerId: string }, @ConnectedSocket() client: Socket) {
         this.logger.log(`Client joining game: ${JSON.stringify(data)}`);
         client.join(data.gameId);
-        const result = this.gamemodeService.joinGame(data.gameId, data.playerId);
+        const result = await this.gamemodeService.joinGame(data.gameId, data.playerId);
 
         if (result && result.gameStarted) {
             this.server.to(data.gameId).emit('gameStarted', { ...result, startTime: Date.now() });
