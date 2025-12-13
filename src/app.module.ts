@@ -11,6 +11,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { EnergyModule } from './modules/energy/energy.module';
 import { DiamondsModule } from './modules/diamonds/diamonds.module';
 import { ContributionsModule } from './modules/contributions/contributions.module';
+import { GamemodeModule } from './modules/gamemode/gamemode.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { ContributionsModule } from './modules/contributions/contributions.modul
     EnergyModule,
     DiamondsModule,
     ContributionsModule,
+    GamemodeModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
