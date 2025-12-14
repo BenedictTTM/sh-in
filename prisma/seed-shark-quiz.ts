@@ -35,7 +35,7 @@ async function main() {
             description: "Test your knowledge about the ocean's most fascinating predators!",
             timeLimit: 300, // 5 minutes
             passingScore: 8,
-            maxAttempts: 5,
+            maxAttempts: null,
             isPublished: true, // Make sure it shows up directly
             // Make sure it appears AFTER the existing quizzes. 
             // The previous code had a logic about "previous level". 

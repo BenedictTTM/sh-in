@@ -67,4 +67,13 @@ export class GamemodeGateway
             score: data.score
         });
     }
+
+    @SubscribeMessage('playerFinished')
+    handlePlayerFinished(@MessageBody() data: { gameId: string; playerId: string }) {
+        this.logger.log(`Player finished: ${data.playerId} in game ${data.gameId}`);
+        // Broadcast to everyone in the room that a player has finished
+        this.server.to(data.gameId).emit('opponentFinished', {
+            playerId: data.playerId
+        });
+    }
 }

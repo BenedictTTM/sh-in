@@ -114,7 +114,7 @@ async function main() {
                 description: quizData.description,
                 timeLimit: 300, // 5 minutes
                 passingScore: quizData.passingScore,
-                maxAttempts: 5,
+                maxAttempts: null,
                 isPublished: true,
                 publishedAt: new Date(),
                 createdById: user.id,
