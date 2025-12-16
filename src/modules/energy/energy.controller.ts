@@ -11,6 +11,7 @@ import { EnergyService } from './energy.service';
 import { DiamondsService } from '../diamonds/diamonds.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { TransactionReason } from '../../common/enums/currency.enum';
+import { AwardEnergyDto } from './dto/award-energy.dto';
 
 @Controller('energy')
 @UseGuards(JwtAuthGuard)
@@ -57,6 +58,25 @@ export class EnergyController {
             spentDiamonds: diamondsToSpend,
             gainedEnergy: energyAmount,
             currentEnergy: newEnergyBalance
+        };
+    }
+
+    @Post('award')
+    async awardEnergy(
+        @Request() req,
+        @Body() dto: AwardEnergyDto,
+    ) {
+        const userId = req.user.id;
+        const newBalance = await this.energyService.awardEnergy(
+            userId,
+            dto.amount,
+            dto.reason || 'Admin Award'
+        );
+
+        return {
+            success: true,
+            awardedAmount: dto.amount,
+            currentEnergy: newBalance
         };
     }
 }

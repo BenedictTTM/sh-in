@@ -189,4 +189,53 @@ export class EnergyService {
 
         return newEnergy;
     }
+
+    /**
+     * Award energy to a user (e.g. gameplay reward)
+     */
+    async awardEnergy(
+        userId: number,
+        amount: number,
+        reason: string = 'Reward',
+    ): Promise<number> {
+        const stats = await this.prisma.userStats.findUnique({ where: { userId } });
+
+        if (!stats) {
+            throw new BadRequestException('User stats not found');
+        }
+
+        const currentEnergy = stats.energy;
+
+        // Cap at 30 (MAX_ENERGY_DEFAULT)
+        const newEnergyUncapped = currentEnergy + amount;
+        const newEnergy = Math.min(newEnergyUncapped, this.MAX_ENERGY_DEFAULT);
+        const addedAmount = newEnergy - currentEnergy;
+
+        if (addedAmount <= 0) {
+            return currentEnergy;
+        }
+
+        await this.prisma.$transaction(async (tx) => {
+            await tx.userStats.update({
+                where: { userId },
+                data: {
+                    energy: newEnergy,
+                },
+            });
+
+            await tx.currencyTransaction.create({
+                data: {
+                    userId,
+                    currency: CurrencyType.ENERGY,
+                    type: TransactionType.ENERGY_REWARD,
+                    amount: addedAmount,
+                    balanceBefore: currentEnergy,
+                    balanceAfter: newEnergy,
+                    reason: reason,
+                },
+            });
+        });
+
+        return newEnergy;
+    }
 }
