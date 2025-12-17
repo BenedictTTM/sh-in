@@ -239,6 +239,7 @@ model Question {
   // Question Content
   text        String   @db.Text
   explanation String?  @db.Text // shown after answer
+  solution    String?  @db.Text // Detailed step-by-step solution
   points      Int      @default(1) // points for correct answer
   
   // Question Configuration

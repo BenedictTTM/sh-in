@@ -411,7 +411,16 @@ export class AttemptsService {
                 id: true,
                 text: true,
                 explanation: true,
+                solution: true,
                 points: true,
+                choices: {
+                  where: { isCorrect: true },
+                  select: {
+                    id: true,
+                    text: true,
+                    isCorrect: true,
+                  },
+                },
               },
             },
             choice: {
@@ -477,12 +486,14 @@ export class AttemptsService {
         questionId: answer.question.id,
         questionText: answer.question.text,
         explanation: answer.question.explanation,
+        solution: answer.question['solution'],
+        correctAnswer: answer.question['choices']?.[0] || null,
         yourAnswer: {
           choiceId: answer.choice.id,
           choiceText: answer.choice.text,
         },
         isCorrect: answer.isCorrect,
-        correctAnswer: answer.choice.isCorrect ? answer.choice : null,
+
         pointsAwarded: answer.pointsAwarded,
         maxPoints: answer.question.points,
       })),
