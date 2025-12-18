@@ -60,19 +60,20 @@ export class GamemodeGateway
     }
 
     @SubscribeMessage('updateScore')
-    handleScoreUpdate(@MessageBody() data: { gameId: string; score: number; playerId: string }) {
+    handleScoreUpdate(@MessageBody() data: { gameId: string; score: number; playerId: string; correctCount: number }, @ConnectedSocket() client: Socket) {
         // Broadcast to everyone else in the room (the opponent)
-        this.server.to(data.gameId).emit('opponentScoreUpdate', {
+        client.broadcast.to(data.gameId).emit('opponentScoreUpdate', {
             playerId: data.playerId,
-            score: data.score
+            score: data.score,
+            correctCount: data.correctCount
         });
     }
 
     @SubscribeMessage('playerFinished')
-    handlePlayerFinished(@MessageBody() data: { gameId: string; playerId: string }) {
+    handlePlayerFinished(@MessageBody() data: { gameId: string; playerId: string }, @ConnectedSocket() client: Socket) {
         this.logger.log(`Player finished: ${data.playerId} in game ${data.gameId}`);
         // Broadcast to everyone in the room that a player has finished
-        this.server.to(data.gameId).emit('opponentFinished', {
+        client.broadcast.to(data.gameId).emit('opponentFinished', {
             playerId: data.playerId
         });
     }

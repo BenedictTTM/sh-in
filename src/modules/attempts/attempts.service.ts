@@ -57,9 +57,9 @@ export class AttemptsService {
       throw new NotFoundException(`Quiz with ID ${quizId} not found`);
     }
 
-    if (!quiz.isPublished) {
-      throw new ForbiddenException('Quiz is not published');
-    }
+    // if (!quiz.isPublished) {
+    //   throw new ForbiddenException('Quiz is not published');
+    // }
 
     // Verify Previous Level Completion
     // distinct: Check if there's a quiz published BEFORE this one that must be completed first
@@ -85,28 +85,28 @@ export class AttemptsService {
         }
       });
 
-      if (isPreviousCompleted === 0) {
-        throw new ForbiddenException(`You must complete "${previousQuiz.title}" before starting this level.`);
-      }
+      // if (isPreviousCompleted === 0) {
+      //   throw new ForbiddenException(`You must complete "${previousQuiz.title}" before starting this level.`);
+      // }
     }
 
-    if (quiz.maxAttempts) {
-      const completedAttempts = quiz.attempts.filter(
-        (a) => a.status === 'completed',
-      ).length;
+    // if (quiz.maxAttempts) {
+    //   const completedAttempts = quiz.attempts.filter(
+    //     (a) => a.status === 'completed',
+    //   ).length;
 
-      if (completedAttempts >= quiz.maxAttempts) {
-        throw new BadRequestException(
-          `Maximum attempts (${quiz.maxAttempts}) reached for this quiz`,
-        );
-      }
-    }
+    //   if (completedAttempts >= quiz.maxAttempts) {
+    //     throw new BadRequestException(
+    //       `Maximum attempts (${quiz.maxAttempts}) reached for this quiz`,
+    //     );
+    //   }
+    // }
 
     // Consume Energy
-    await this.energyService.consumeEnergy(userId, {
-      amount: 5, // Deduct 5 energy bars per quiz
-      reason: TransactionReason.QUIZ_PLAY,
-    });
+    // await this.energyService.consumeEnergy(userId, {
+    //   amount: 5, // Deduct 5 energy bars per quiz
+    //   reason: TransactionReason.QUIZ_PLAY,
+    // });
 
 
     const maxScore = quiz.questions.reduce((sum, q) => sum + q.points, 0);
