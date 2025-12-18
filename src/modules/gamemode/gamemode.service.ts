@@ -21,9 +21,9 @@ export class GamemodeService {
             if (game.players.length === 2) {
                 game.status = 'playing';
                 const quizId = await this.getRandomQuizId();
-                return { ...game, gameStarted: true, quizId };
+                return { ...game, gameId, gameStarted: true, quizId };
             }
-            return game;
+            return { ...game, gameId };
         }
         return null;
     }

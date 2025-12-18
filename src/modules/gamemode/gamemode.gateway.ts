@@ -71,7 +71,7 @@ export class GamemodeGateway
 
     @SubscribeMessage('playerFinished')
     handlePlayerFinished(@MessageBody() data: { gameId: string; playerId: string }, @ConnectedSocket() client: Socket) {
-        this.logger.log(`Player finished: ${data.playerId} in game ${data.gameId}`);
+        this.logger.log(`[Gateway] Player finished received: ${data.playerId} in game ${data.gameId} from client ${client.id}`);
         // Broadcast to everyone in the room that a player has finished
         client.broadcast.to(data.gameId).emit('opponentFinished', {
             playerId: data.playerId
