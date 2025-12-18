@@ -236,35 +236,63 @@ export class AttemptsService {
     const isCorrect = choice.isCorrect;
     const pointsAwarded = isCorrect ? question.points : 0;
 
-    return this.prisma.$transaction(async (tx) => {
-      await tx.answer.create({
-        data: {
-          attemptId,
-          questionId,
-          choiceId: selectedChoiceId,
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        await tx.answer.create({
+          data: {
+            attemptId,
+            questionId,
+            choiceId: selectedChoiceId,
+            isCorrect,
+            pointsAwarded,
+            idempotencyKey,
+          },
+        });
+
+        const updatedAttempt = await tx.attempt.update({
+          where: { id: attemptId },
+          data: {
+            score: { increment: pointsAwarded },
+          },
+          select: {
+            score: true,
+          },
+        });
+
+        return {
           isCorrect,
           pointsAwarded,
-          idempotencyKey,
-        },
+          currentScore: updatedAttempt.score,
+          cached: false,
+        };
       });
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        const existing = await this.prisma.answer.findUnique({
+          where: {
+            attemptId_questionId: {
+              attemptId,
+              questionId,
+            },
+          },
+          include: {
+            attempt: {
+              select: { score: true },
+            },
+          },
+        });
 
-      const updatedAttempt = await tx.attempt.update({
-        where: { id: attemptId },
-        data: {
-          score: { increment: pointsAwarded },
-        },
-        select: {
-          score: true,
-        },
-      });
-
-      return {
-        isCorrect,
-        pointsAwarded,
-        currentScore: updatedAttempt.score,
-        cached: false,
-      };
-    });
+        if (existing) {
+          return {
+            isCorrect: existing.isCorrect,
+            pointsAwarded: existing.pointsAwarded,
+            currentScore: existing.attempt.score,
+            cached: true,
+          };
+        }
+      }
+      throw error;
+    }
   }
 
   async finishAttempt(attemptId: number, attemptToken: string, userId: number) {
