@@ -103,10 +103,11 @@ export class AttemptsService {
     // }
 
     // Consume Energy
-    // await this.energyService.consumeEnergy(userId, {
-    //   amount: 5, // Deduct 5 energy bars per quiz
-    //   reason: TransactionReason.QUIZ_PLAY,
-    // });
+    // Consume Energy
+    await this.energyService.consumeEnergy(userId, {
+      amount: 5, // Deduct 5 energy bars per quiz
+      reason: TransactionReason.QUIZ_PLAY,
+    });
 
 
     const maxScore = quiz.questions.reduce((sum, q) => sum + q.points, 0);

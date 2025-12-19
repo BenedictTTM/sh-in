@@ -115,11 +115,24 @@ export class EnergyService {
 
         // 2. Transact
         await this.prisma.$transaction(async (tx) => {
+            // Check if we are dropping below max energy (and were previously at or above it)
+            // If so, we must anchor the regeneration start time to NOW.
+            const stats = await tx.userStats.findUnique({ where: { userId } });
+
+            if (!stats) {
+                throw new BadRequestException('User stats not found');
+            }
+
+            const wasFull = stats.energy >= this.MAX_ENERGY_DEFAULT;
+
             // Deduct
             const updatedStats = await tx.userStats.update({
                 where: { userId },
                 data: {
                     energy: { decrement: params.amount },
+                    // If we were full, and typically dropping below, set refill timer to now.
+                    // If we were NOT full, we keep the old timer (regeneration continues).
+                    lastEnergyRefillAt: wasFull ? new Date() : undefined,
                 },
             });
 
