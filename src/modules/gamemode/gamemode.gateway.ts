@@ -59,6 +59,17 @@ export class GamemodeGateway
         return { event: 'createdGame', data: result };
     }
 
+    @SubscribeMessage('rejoinGame')
+    handleRejoinGame(@MessageBody() data: { gameId: string }, @ConnectedSocket() client: Socket) {
+        this.logger.log(`Client rejoining game: ${data.gameId}`);
+        // Ensure the client is in the game room
+        client.join(data.gameId);
+        // The game state is already persisted on the client side
+        // We just need to make sure the socket is properly connected to the room
+        return { event: 'rejoinedGame', data: { gameId: data.gameId, success: true } };
+    }
+
+
     @SubscribeMessage('updateScore')
     handleScoreUpdate(@MessageBody() data: { gameId: string; score: number; playerId: string; correctCount: number }, @ConnectedSocket() client: Socket) {
         // Broadcast to everyone else in the room (the opponent)
