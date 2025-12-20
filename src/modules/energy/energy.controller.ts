@@ -19,7 +19,7 @@ export class EnergyController {
     constructor(
         private readonly energyService: EnergyService,
         private readonly diamondsService: DiamondsService,
-    ) { }
+    )
 
     @Get()
     async getEnergy(@Request() req) {
@@ -36,17 +36,17 @@ export class EnergyController {
         }
 
         const userId = req.user.id;
-        // Conversion rate: 1 Diamond = 10 Energy
+
         const energyAmount = diamondsToSpend * 10;
 
-        // 1. Spend diamonds
+
         await this.diamondsService.spendDiamonds(
             userId,
             diamondsToSpend,
             TransactionReason.ENERGY_REFILL
         );
 
-        // 2. Refill energy
+
         const newEnergyBalance = await this.energyService.refillEnergy(
             userId,
             energyAmount,

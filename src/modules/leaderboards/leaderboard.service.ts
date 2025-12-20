@@ -3,7 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class LeaderboardService {
-    constructor(private prisma: PrismaService) { }
+    constructor(private prisma: PrismaService)
 
     private getCurrentMonthRange() {
         const now = new Date();
@@ -15,7 +15,7 @@ export class LeaderboardService {
     async getGlobalLeaderboard(limit: number = 10) {
         const { startOfMonth, endOfMonth } = this.getCurrentMonthRange();
 
-        // Aggregate scores by user for the current month
+
         const leaderboard = await this.prisma.attempt.groupBy({
             by: ['userId'],
             where: {
@@ -35,7 +35,7 @@ export class LeaderboardService {
             take: limit,
         });
 
-        // Fetch user details for the leaderboard entries
+
         const userIds = leaderboard.map((entry) => entry.userId);
         const users = await this.prisma.user.findMany({
             where: {
@@ -50,7 +50,7 @@ export class LeaderboardService {
             },
         });
 
-        // Merge score data with user data
+
         return leaderboard.map((entry, index) => {
             const user = users.find((u) => u.id === entry.userId);
             return {
@@ -76,7 +76,7 @@ export class LeaderboardService {
     async getUserRank(userId: number) {
         const { startOfMonth, endOfMonth } = this.getCurrentMonthRange();
 
-        // Get current user's total score for the month
+
         const userScoreAgg = await this.prisma.attempt.aggregate({
             where: {
                 userId: userId,
@@ -115,11 +115,11 @@ export class LeaderboardService {
     }
 
     async getQuizRank(quizId: number, score: number) {
-        // Count how many attempts for this quiz have a higher score
-        // We only consider the BEST score for each user? Or just all attempts?
-        // "Top 3 finishes" usually implies "I finished 1st, 2nd, or 3rd on the leaderboard for this quiz"
-        // Let's assume we compare against all other attempts for simplicity, or distinct users.
-        // Let's go with: Rank among all attempts for this quiz.
+
+
+
+
+
 
         const count = await this.prisma.attempt.count({
             where: {

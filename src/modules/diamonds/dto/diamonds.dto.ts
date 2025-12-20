@@ -1,9 +1,7 @@
 import { IsInt, IsPositive, IsOptional, IsString, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-/**
- * DTO for purchasing diamonds (IAP)
- */
+
 export class PurchaseDiamondsDto {
     @ApiProperty({
         description: 'Amount of diamonds to purchase',
@@ -38,9 +36,7 @@ export class PurchaseDiamondsDto {
     idempotencyKey?: string;
 }
 
-/**
- * DTO for spending diamonds
- */
+
 export class SpendDiamondsDto {
     @ApiProperty({
         description: 'Amount of diamonds to spend',
@@ -74,9 +70,7 @@ export class SpendDiamondsDto {
     idempotencyKey?: string;
 }
 
-/**
- * DTO for granting diamonds (admin only)
- */
+
 export class GrantDiamondsDto {
     @ApiProperty({
         description: 'User ID to grant diamonds to',
@@ -103,9 +97,7 @@ export class GrantDiamondsDto {
     reason: string;
 }
 
-/**
- * DTO for refunding diamonds
- */
+
 export class RefundDiamondsDto {
     @ApiProperty({
         description: 'Amount of diamonds to refund',

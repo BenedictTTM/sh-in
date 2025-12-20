@@ -8,7 +8,7 @@ import { TokenService } from '../../modules/auth/services/token.service';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
-    constructor(private readonly tokenService: TokenService) { }
+    constructor(private readonly tokenService: TokenService)
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
@@ -20,8 +20,8 @@ export class JwtAuthGuard implements CanActivate {
 
         try {
             const payload = await this.tokenService.verifyAccessToken(token);
-            // Assign payload to request object so controllers can access it
-            // Mapping sub to id as expected by controllers
+
+
             request['user'] = {
                 id: payload.sub,
                 email: payload.email,

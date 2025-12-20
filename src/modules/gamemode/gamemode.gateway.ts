@@ -24,7 +24,7 @@ export class GamemodeGateway
 
     private logger: Logger = new Logger('GamemodeGateway');
 
-    constructor(private readonly gamemodeService: GamemodeService) { }
+    constructor(private readonly gamemodeService: GamemodeService)
 
     afterInit(server: Server) {
         this.logger.log('GamemodeGateway initialized');
@@ -62,17 +62,17 @@ export class GamemodeGateway
     @SubscribeMessage('rejoinGame')
     handleRejoinGame(@MessageBody() data: { gameId: string }, @ConnectedSocket() client: Socket) {
         this.logger.log(`Client rejoining game: ${data.gameId}`);
-        // Ensure the client is in the game room
+
         client.join(data.gameId);
-        // The game state is already persisted on the client side
-        // We just need to make sure the socket is properly connected to the room
+
+
         return { event: 'rejoinedGame', data: { gameId: data.gameId, success: true } };
     }
 
 
     @SubscribeMessage('updateScore')
     handleScoreUpdate(@MessageBody() data: { gameId: string; score: number; playerId: string; correctCount: number }, @ConnectedSocket() client: Socket) {
-        // Broadcast to everyone else in the room (the opponent)
+
         client.broadcast.to(data.gameId).emit('opponentScoreUpdate', {
             playerId: data.playerId,
             score: data.score,
@@ -83,7 +83,7 @@ export class GamemodeGateway
     @SubscribeMessage('playerFinished')
     handlePlayerFinished(@MessageBody() data: { gameId: string; playerId: string }, @ConnectedSocket() client: Socket) {
         this.logger.log(`[Gateway] Player finished received: ${data.playerId} in game ${data.gameId} from client ${client.id}`);
-        // Broadcast to everyone in the room that a player has finished
+
         client.broadcast.to(data.gameId).emit('opponentFinished', {
             playerId: data.playerId
         });

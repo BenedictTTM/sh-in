@@ -14,11 +14,9 @@ import {
 export class DiamondsService {
     private readonly logger = new Logger(DiamondsService.name);
 
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService)
 
-    /**
-     * Get user's current diamond balance
-     */
+
     async getBalance(userId: number): Promise<{ diamonds: number }> {
         const stats = await this.prisma.userStats.findUnique({
             where: { userId },
@@ -26,9 +24,7 @@ export class DiamondsService {
         return { diamonds: stats?.diamonds || 0 };
     }
 
-    /**
-     * Grant diamonds to user
-     */
+
     async grantDiamonds(
         userId: number,
         amount: number,
@@ -49,7 +45,7 @@ export class DiamondsService {
                 data: {
                     userId,
                     currency: CurrencyType.DIAMONDS,
-                    type: TransactionType.DIAMOND_REWARD, // or PURCHASE depending on context, assuming reward mostly here
+                    type: TransactionType.DIAMOND_REWARD,
                     amount: amount,
                     balanceBefore: stats.diamonds - amount,
                     balanceAfter: stats.diamonds,
@@ -65,9 +61,7 @@ export class DiamondsService {
         return result.diamonds;
     }
 
-    /**
-     * Spend diamonds
-     */
+
     async spendDiamonds(
         userId: number,
         amount: number,

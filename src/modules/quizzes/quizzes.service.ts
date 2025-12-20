@@ -9,7 +9,7 @@ import { CreateQuizDto, UpdateQuizDto } from './dto';
 
 @Injectable()
 export class QuizzesService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService)
 
   async findAllPublished(userId?: number) {
     const quizzes = await this.prisma.quiz.findMany({
@@ -31,7 +31,7 @@ export class QuizzesService {
             questions: true,
           },
         },
-        // If userId is provided, check if they have completed it
+
         ...(userId && {
           attempts: {
             where: {
@@ -46,14 +46,14 @@ export class QuizzesService {
         }),
       },
       orderBy: {
-        publishedAt: 'asc', // Changed to asc so Level 1 is first
+        publishedAt: 'asc',
       },
     });
 
     return quizzes.map((quiz: any) => ({
       ...quiz,
       isCompleted: userId ? quiz.attempts?.length > 0 : false,
-      attempts: undefined, // specific attempts info not needed in list
+      attempts: undefined,
     }));
   }
 
@@ -100,7 +100,7 @@ export class QuizzesService {
     }
 
     if (!quiz.isPublished && (!userId || quiz.createdById !== userId)) {
-      // Return quiz without questions for unpublished quizzes that user doesn't own
+
       const { questions: _, ...quizWithoutQuestions } = quiz;
       return quizWithoutQuestions;
     }
@@ -172,7 +172,7 @@ export class QuizzesService {
       throw new NotFoundException(`Quiz with ID ${quizId} not found`);
     }
 
-    // Ensure user can only update their own quizzes (admin guard should handle broader access)
+
     if (quiz.createdById !== userId) {
       throw new ForbiddenException('Not authorized to update this quiz');
     }

@@ -13,7 +13,7 @@ import { Type } from 'class-transformer';
 export class UpdateChoiceDto {
   @IsOptional()
   @IsInt()
-  id?: number; // If provided, updates existing; if omitted, creates new
+  id?: number;
 
   @IsString()
   @MaxLength(1000)
@@ -26,13 +26,13 @@ export class UpdateChoiceDto {
 
   @IsOptional()
   @IsBoolean()
-  _delete?: boolean; // Mark for deletion
+  _delete?: boolean;
 }
 
 export class UpdateQuestionDto {
   @IsOptional()
   @IsInt()
-  id?: number; // If provided, updates existing; if omitted, creates new
+  id?: number;
 
   @IsString()
   @MaxLength(2000)
@@ -66,7 +66,7 @@ export class UpdateQuestionDto {
 
   @IsOptional()
   @IsBoolean()
-  _delete?: boolean; // Mark for deletion
+  _delete?: boolean;
 }
 
 export class UpdateQuizDto {

@@ -9,6 +9,6 @@ import { AuthModule } from '../auth/auth.module';
   imports: [AuthModule],
   controllers: [QuizzesController],
   providers: [QuizzesService, PrismaService],
-  exports: [QuizzesService], // Export for use in other modules
+  exports: [QuizzesService],
 })
-export class QuizzesModule { }
+export class QuizzesModule

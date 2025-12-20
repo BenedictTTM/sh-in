@@ -23,7 +23,7 @@ export class AttemptsService {
     private readonly statsService: StatsService,
     private readonly leaderboardService: LeaderboardService,
     private readonly diamondsService: DiamondsService,
-  ) { }
+  )
 
   async startAttempt(
     quizId: number,
@@ -57,12 +57,12 @@ export class AttemptsService {
       throw new NotFoundException(`Quiz with ID ${quizId} not found`);
     }
 
-    // if (!quiz.isPublished) {
-    //   throw new ForbiddenException('Quiz is not published');
-    // }
 
-    // Verify Previous Level Completion
-    // distinct: Check if there's a quiz published BEFORE this one that must be completed first
+
+
+
+
+
     const previousQuiz = await this.prisma.quiz.findFirst({
       where: {
         isPublished: true,
@@ -85,27 +85,27 @@ export class AttemptsService {
         }
       });
 
-      // if (isPreviousCompleted === 0) {
-      //   throw new ForbiddenException(`You must complete "${previousQuiz.title}" before starting this level.`);
-      // }
+
+
+
     }
 
-    // if (quiz.maxAttempts) {
-    //   const completedAttempts = quiz.attempts.filter(
-    //     (a) => a.status === 'completed',
-    //   ).length;
 
-    //   if (completedAttempts >= quiz.maxAttempts) {
-    //     throw new BadRequestException(
-    //       `Maximum attempts (${quiz.maxAttempts}) reached for this quiz`,
-    //     );
-    //   }
-    // }
 
-    // Consume Energy
-    // Consume Energy
+
+
+
+
+
+
+
+
+
+
+
+
     await this.energyService.consumeEnergy(userId, {
-      amount: 5, // Deduct 5 energy bars per quiz
+      amount: 5,
       reason: TransactionReason.QUIZ_PLAY,
     });
 
@@ -354,7 +354,7 @@ export class AttemptsService {
       },
     });
 
-    // Update Daily Contributions
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -375,10 +375,10 @@ export class AttemptsService {
       },
     });
 
-    // Update Stats
+
     await this.statsService.updateStats(userId, {
-      xp: attempt.score, // 1 XP per point? Or custom logic? Let's assume score = XP for now
-      gems: passed ? 10 : 1, // 10 gems for passing, 1 for trying
+      xp: attempt.score,
+      gems: passed ? 10 : 1,
     });
 
     if (passed) {
@@ -390,16 +390,16 @@ export class AttemptsService {
 
     await this.statsService.updateStreak(userId);
 
-    // Update Leaderboard & Top 3
+
     // this.updateLeaderboard(userId, attempt.quiz.id, attempt.score); // Old method, remove or keep logging?
 
-    // Check rank for Top 3 finish
+
     const rank = await this.leaderboardService.getQuizRank(attempt.quiz.id, attempt.score);
     if (rank <= 3) {
       await this.statsService.incrementTop3(userId);
     }
 
-    // Grant Diamond for Perfect Score
+
     if (attempt.score === attempt.maxScore && attempt.maxScore > 0) {
       await this.diamondsService.grantDiamonds(userId, 1, TransactionReason.REWARD, {
         quizId: attempt.quiz.id,

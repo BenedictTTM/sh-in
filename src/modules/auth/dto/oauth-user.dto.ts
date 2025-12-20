@@ -1,13 +1,6 @@
 import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-/**
- * OAuth User Data Transfer Object
- *
- * Represents user data received from OAuth providers
- * (Google, GitHub, Facebook, etc.)
- *
- * @class OAuthUserDto
- */
+
 export class OAuthUserDto {
   @IsEmail()
   @IsNotEmpty()

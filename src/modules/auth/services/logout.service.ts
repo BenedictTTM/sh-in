@@ -13,7 +13,7 @@ export class LogoutService {
   constructor(
     private readonly tokenService: TokenService,
     private readonly prisma: PrismaService,
-  ) {}
+  )
 
   async logout(
     userId: number,

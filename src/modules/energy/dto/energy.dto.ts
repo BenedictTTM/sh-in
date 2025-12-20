@@ -1,9 +1,7 @@
 import { IsInt, IsPositive, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-/**
- * DTO for consuming energy
- */
+
 export class ConsumeEnergyDto {
     @ApiProperty({
         description: 'Amount of energy to consume',
@@ -38,9 +36,7 @@ export class ConsumeEnergyDto {
     idempotencyKey?: string;
 }
 
-/**
- * DTO for refilling energy with diamonds
- */
+
 export class RefillEnergyDto {
     @ApiProperty({
         description: 'Amount of energy to refill',
@@ -60,9 +56,7 @@ export class RefillEnergyDto {
     idempotencyKey?: string;
 }
 
-/**
- * DTO for granting energy (admin)
- */
+
 export class GrantEnergyDto {
     @ApiProperty({
         description: 'User ID to grant energy to',

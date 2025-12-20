@@ -3,7 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class StatsService {
-    constructor(private prisma: PrismaService) { }
+    constructor(private prisma: PrismaService)
 
     async getStats(userId: number) {
         const stats = await this.prisma.userStats.findUnique({
@@ -43,12 +43,12 @@ export class StatsService {
             if (isYesterday) {
                 newStreak += 1;
             } else if (!isSameDay) {
-                // Missed a day (or more)
+
                 newStreak = 1;
             }
-            // If same day, do nothing (keep current streak)
+
         } else {
-            // First activity ever
+
             newStreak = 1;
         }
 
@@ -72,11 +72,11 @@ export class StatsService {
 
     async updateLevel(userId: number, quizId: number) {
         console.log(`[StatsService] Updating level for user ${userId} after finishing quiz ${quizId}`);
-        // 1. Get current stats
+
         const stats = await this.getStats(userId);
 
-        // 2. Find the "Level Number" of this quiz
-        // We assume levels are ordered by publishedAt asc
+
+
         const allQuizzes = await this.prisma.quiz.findMany({
             where: { isPublished: true, deletedAt: null },
             orderBy: { publishedAt: 'asc' },
@@ -92,9 +92,9 @@ export class StatsService {
         const levelNumber = quizIndex + 1;
         console.log(`[StatsService] Quiz ${quizId} is Level ${levelNumber}. User current level: ${stats.currentLevel}`);
 
-        // 3. If the user just completed their "current level", unlock the next one
-        // 3. If the user completes a level >= their current level, bump them up.
-        // E.g. User is Level 1. Completes Quiz 2 (Level 2). Should become Level 3.
+
+
+
         if (levelNumber >= stats.currentLevel) {
             const newLevel = levelNumber + 1;
             console.log(`[StatsService] User completed Level ${levelNumber} (Current: ${stats.currentLevel}). Updating to Level ${newLevel}.`);

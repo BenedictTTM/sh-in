@@ -6,11 +6,9 @@ import { UserProfileDto } from './dto/user-profile.dto';
 export class UsersService {
     private readonly logger = new Logger(UsersService.name);
 
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService)
 
-    /**
-     * Get aggregated user stats for dashboard
-     */
+
     async getUserStats(userId: number) {
         const stats = await this.prisma.userStats.findUnique({
             where: { userId },
@@ -27,11 +25,11 @@ export class UsersService {
         });
 
         if (!stats) {
-            // Create empty stats if missing (lazy initialization)
+
             return this.initializeUserStats(userId);
         }
 
-        // Calculate Global Rank (Count users with more XP)
+
         const rank = await this.prisma.userStats.count({
             where: {
                 xp: { gt: stats.xp },
@@ -54,9 +52,7 @@ export class UsersService {
         };
     }
 
-    /**
-     * Get activity heatmap data for a specific year
-     */
+
     async getHeatmap(userId: number, year: number = new Date().getFullYear()) {
         const startDate = new Date(year, 0, 1);
         const endDate = new Date(year + 1, 0, 1);
@@ -89,23 +85,19 @@ export class UsersService {
         }));
     }
 
-    /**
-     * Log user activity (called by other modules)
-     */
+
     async logActivity(
         userId: number,
         type: 'study' | 'quiz',
-        value: number, // seconds or count
+        value: number,
     ) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const updateData: any = {
-            // Only update if existing, handled by upsert
-        };
+        const updateData: any = ;
 
         if (type === 'study') {
-            // Increment global stats
+
             await this.prisma.userStats.update({
                 where: { userId },
                 data: {
@@ -115,7 +107,7 @@ export class UsersService {
             });
         }
 
-        // Upsert daily log
+
         return this.prisma.userActivityLog.upsert({
             where: {
                 userId_activityDate: {
@@ -136,11 +128,9 @@ export class UsersService {
         });
     }
 
-    /**
-     * Initialize stats for a new user
-     */
+
     async initializeUserStats(userId: number) {
-        // Check if user exists
+
         const user = await this.prisma.user.findUnique({ where: { id: userId } });
         if (!user) throw new NotFoundException('User not found');
 
@@ -152,14 +142,12 @@ export class UsersService {
 
         return {
             ...stats,
-            globalRank: -1, // New user
+            globalRank: -1,
             quizzesSolved: 0
         };
     }
 
-    /**
-     * Get user profile (name, school, picture)
-     */
+
     async getUserProfile(userId: number): Promise<UserProfileDto> {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },

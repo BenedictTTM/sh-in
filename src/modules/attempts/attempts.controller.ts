@@ -11,7 +11,7 @@ import {
     HttpStatus,
     BadRequestException,
     UnauthorizedException,
-    UseGuards, // Ensure UseGuards is imported
+    UseGuards,
 } from '@nestjs/common';
 import { AttemptsService } from './attempts.service';
 import { SubmitAnswerDto } from './dto';
@@ -20,7 +20,7 @@ import { JwtAuthGuard } from '../../common/guards';
 @Controller({ version: '1' })
 @UseGuards(JwtAuthGuard)
 export class AttemptsController {
-    constructor(private readonly attemptsService: AttemptsService) { }
+    constructor(private readonly attemptsService: AttemptsService)
 
 
     @Post('quizzes/:quizId/start')

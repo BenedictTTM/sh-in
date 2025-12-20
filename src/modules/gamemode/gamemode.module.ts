@@ -7,4 +7,4 @@ import { PrismaService } from '../../prisma/prisma.service';
     providers: [GamemodeGateway, GamemodeService, PrismaService],
     exports: [GamemodeService],
 })
-export class GamemodeModule { }
+export class GamemodeModule

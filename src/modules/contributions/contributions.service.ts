@@ -3,7 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class ContributionsService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService)
 
     async getUserContributions(userId: number) {
         const logs = await this.prisma.userActivityLog.findMany({

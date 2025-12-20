@@ -5,7 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class GamemodeService {
     private activeGames = new Map<string, any>();
 
-    constructor(private prisma: PrismaService) { }
+    constructor(private prisma: PrismaService)
 
     createGame(gameId: string) {
         this.activeGames.set(gameId, { players: [], status: 'waiting' });
@@ -29,13 +29,13 @@ export class GamemodeService {
     }
 
     private async getRandomQuizId(): Promise<number> {
-        // Fetch all quiz IDs
+
         const quizzes = await this.prisma.quiz.findMany({
             select: { id: true },
         });
 
         if (quizzes.length === 0) {
-            return 1; // Fallback to ID 1 if no quizzes
+            return 1;
         }
 
         const randomIndex = Math.floor(Math.random() * quizzes.length);

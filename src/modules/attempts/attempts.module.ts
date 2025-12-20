@@ -13,7 +13,7 @@ import { DiamondsModule } from '../diamonds/diamonds.module';
   imports: [EnergyModule, StatsModule, LeaderboardsModule, AuthModule, DiamondsModule],
   controllers: [AttemptsController],
   providers: [AttemptsService, PrismaService],
-  exports: [AttemptsService], // Export for use in other modules
+  exports: [AttemptsService],
 })
 
-export class AttemptsModule { }
+export class AttemptsModule

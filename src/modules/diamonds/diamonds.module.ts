@@ -11,4 +11,4 @@ import { AuthModule } from '../auth/auth.module';
     providers: [DiamondsService, PrismaService],
     exports: [DiamondsService],
 })
-export class DiamondsModule { }
+export class DiamondsModule

@@ -14,7 +14,7 @@ export class RefreshTokenService {
   constructor(
     private readonly tokenService: TokenService,
     private readonly prisma: PrismaService,
-  ) { }
+  )
 
   async refreshAccessToken(refreshToken: string): Promise<{
     access_token: string;

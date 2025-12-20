@@ -5,7 +5,7 @@ import { OptionalJwtAuthGuard } from '../../common/guards/optional-jwt-auth.guar
 
 @Controller({ path: 'quizzes', version: '1' })
 export class QuizzesController {
-  constructor(private readonly quizzesService: QuizzesService) { }
+  constructor(private readonly quizzesService: QuizzesService)
 
   @Post()
   async create(@Body() createQuizDto: CreateQuizDto, @Request() req: { user?: { id: number } }) {

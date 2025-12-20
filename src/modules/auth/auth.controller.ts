@@ -23,23 +23,7 @@ import {
   ResetPasswordDto,
 } from './dto';
 
-/**
- * Auth Controller
- *
- * REST API endpoints for authentication operations.
- * All endpoints return JSON responses (no cookies).
- *
- * Endpoints:
- * - POST /auth/signup - Register new user
- * - POST /auth/login - Authenticate user
- * - POST /auth/refresh - Refresh access token
- * - POST /auth/logout - Logout current session
- * - POST /auth/logout-all - Logout from all devices
- * - POST /auth/password-reset/request - Request password reset
- * - POST /auth/password-reset/confirm - Reset password with token
- *
- * @controller auth
- */
+
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -49,7 +33,7 @@ export class AuthController {
     private readonly logoutService: LogoutService,
     private readonly refreshTokenService: RefreshTokenService,
     private readonly passwordResetService: PasswordResetService,
-  ) {}
+  )
 
 
   @Post('signup')

@@ -50,7 +50,7 @@ export class CreateQuestionDto {
   @IsArray()
   @ArrayMinSize(1)
   @IsInt({ each: true })
-  correctChoiceIndexes: number[]; // Indexes of correct choices in choices array
+  correctChoiceIndexes: number[];
 }
 
 export class CreateQuizDto {
@@ -66,7 +66,7 @@ export class CreateQuizDto {
   @IsOptional()
   @IsInt()
   @Min(1)
-  timeLimit?: number; // in seconds
+  timeLimit?: number;
 
   @IsOptional()
   @IsInt()

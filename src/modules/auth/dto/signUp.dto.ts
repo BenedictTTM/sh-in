@@ -7,26 +7,9 @@ import {
   Matches,
 } from 'class-validator';
 
-/**
- * Sign Up Data Transfer Object
- *
- * Validates user registration input with enterprise-grade security:
- * - Email format validation
- * - Password strength requirements
- * - Input sanitization
- * - Length constraints
- *
- * Password Policy:
- * - Minimum 8 characters
- * - At least one uppercase letter
- * - At least one lowercase letter
- * - At least one number
- * - At least one special character
- *
- * @class SignUpDto
- */
+
 export class SignUpDto {
-  @IsEmail({}, { message: 'Please provide a valid email address' })
+  @IsEmail(, { message: 'Please provide a valid email address' })
   @IsNotEmpty({ message: 'Email is required' })
   @MaxLength(255, { message: 'Email must not exceed 255 characters' })
   email: string;

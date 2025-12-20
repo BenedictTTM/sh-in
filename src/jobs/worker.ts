@@ -7,7 +7,7 @@ async function run() {
   console.log('Worker started — placeholder job running every minute');
   setInterval(() => {
     try {
-      // placeholder: run periodic maintenance, e.g. compute leaderboards
+
       console.log('Worker tick — no-op');
     } catch (err) {
       console.error('Worker error', err);

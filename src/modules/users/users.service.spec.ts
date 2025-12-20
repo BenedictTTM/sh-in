@@ -53,13 +53,13 @@ describe('UsersService', () => {
                 energy: 5,
                 user: { id: 1, firstName: 'Test', lastName: 'User' },
             });
-            mockPrismaService.userStats.count.mockResolvedValue(5); // 5 users ahead
-            mockPrismaService.attempt.count.mockResolvedValue(10); // 10 quizzes solved
+            mockPrismaService.userStats.count.mockResolvedValue(5);
+            mockPrismaService.attempt.count.mockResolvedValue(10);
 
             const result = await service.getUserStats(1);
 
             expect(result.xp).toEqual(100);
-            expect(result.globalRank).toEqual(6); // 5 + 1
+            expect(result.globalRank).toEqual(6);
             expect(result.quizzesSolved).toEqual(10);
         });
 

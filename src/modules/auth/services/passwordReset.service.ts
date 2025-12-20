@@ -7,7 +7,7 @@ import * as bcrypt from 'bcrypt';
 export class PasswordResetService {
   private readonly logger = new Logger(PasswordResetService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService)
 
   async requestPasswordReset(email: string): Promise<{
     message: string;
@@ -34,7 +34,7 @@ export class PasswordResetService {
         .createHash('sha256')
         .update(resetToken)
         .digest('hex');
-      const expiresAt = new Date(Date.now() + 3600000); // 1 hour
+      const expiresAt = new Date(Date.now() + 3600000);
 
       await this.prisma.passwordResetToken.create({
         data: {

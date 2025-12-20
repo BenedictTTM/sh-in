@@ -7,18 +7,14 @@ import {
   MinLength,
 } from 'class-validator';
 
-/**
- * Request Password Reset DTO
- */
+
 export class RequestPasswordResetDto {
-  @IsEmail({}, { message: 'Please provide a valid email address' })
+  @IsEmail(, { message: 'Please provide a valid email address' })
   @IsNotEmpty({ message: 'Email is required' })
   email: string;
 }
 
-/**
- * Reset Password DTO
- */
+
 export class ResetPasswordDto {
   @IsString({ message: 'Reset token must be a string' })
   @IsNotEmpty({ message: 'Reset token is required' })

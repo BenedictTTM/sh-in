@@ -16,7 +16,7 @@ import { UserRankDto } from './dto/user-rank.dto';
 @ApiTags('Leaderboards')
 @Controller('leaderboards')
 export class LeaderboardController {
-    constructor(private readonly leaderboardService: LeaderboardService) { }
+    constructor(private readonly leaderboardService: LeaderboardService)
 
     @Get('global')
     @ApiOperation({ summary: 'Get global leaderboard for current month' })

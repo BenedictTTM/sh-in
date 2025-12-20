@@ -10,4 +10,4 @@ import { AuthModule } from '../auth/auth.module';
     providers: [LeaderboardService, PrismaService],
     exports: [LeaderboardService],
 })
-export class LeaderboardsModule { }
+export class LeaderboardsModule
