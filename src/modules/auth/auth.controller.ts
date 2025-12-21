@@ -6,7 +6,12 @@ import {
   HttpStatus,
   Request,
   Get,
+  UseGuards,
+  Res,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import type { Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import {
   SignupService,
@@ -14,6 +19,7 @@ import {
   LogoutService,
   RefreshTokenService,
   PasswordResetService,
+  OAuthService,
 } from './services';
 import {
   SignUpDto,
@@ -33,7 +39,33 @@ export class AuthController {
     private readonly logoutService: LogoutService,
     private readonly refreshTokenService: RefreshTokenService,
     private readonly passwordResetService: PasswordResetService,
-  ) {}
+    private readonly oauthService: OAuthService,
+    private readonly configService: ConfigService,
+  ) { }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {
+    // This triggers the Google OAuth flow
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleAuthRedirect(@Request() req, @Res() res: Response) {
+    try {
+      const result = await this.oauthService.authenticateOAuthUser(req.user);
+
+      const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+      const redirectUrl = `${frontendUrl}/auth/callback?access_token=${encodeURIComponent(result.access_token)}&refresh_token=${encodeURIComponent(result.refresh_token)}&user=${encodeURIComponent(JSON.stringify(result.user))}`;
+
+      return res.status(302).redirect(redirectUrl);
+    } catch (error) {
+      console.error('❌ OAuth Callback Error:', error);
+      const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+      return res.redirect(`${frontendUrl}/auth/login?error=oauth_failed`);
+    }
+  }
+
 
 
   @Post('signup')

@@ -6,16 +6,19 @@ import {
     ParseIntPipe,
     UseGuards,
     UnauthorizedException,
+    Patch,
+    Body,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UserProfileDto } from './dto/user-profile.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-    constructor(private readonly usersService: UsersService) {}
+    constructor(private readonly usersService: UsersService) { }
 
     @Get('me/stats')
     @UseGuards(JwtAuthGuard)
@@ -38,6 +41,21 @@ export class UsersController {
     })
     async getHelper(@Req() req: any) {
         return this.usersService.getUserProfile(req.user.id);
+    }
+
+    @Patch('me')
+    @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'Update current user profile' })
+    @ApiResponse({
+        status: 200,
+        description: 'Returns updated user profile',
+        type: UserProfileDto,
+    })
+    async updateProfile(
+        @Req() req: any,
+        @Body() updateProfileDto: UpdateProfileDto,
+    ) {
+        return this.usersService.updateProfile(req.user.id, updateProfileDto);
     }
 
     @Get('me/heatmap')
