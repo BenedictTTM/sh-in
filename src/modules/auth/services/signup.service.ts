@@ -17,7 +17,7 @@ export class SignupService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tokenService: TokenService,
-  )
+  ) {}
 
 
   async signup(dto: SignUpDto): Promise<{

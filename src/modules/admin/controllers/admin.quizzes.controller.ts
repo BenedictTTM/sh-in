@@ -16,7 +16,7 @@ import { CreateQuizDto, UpdateQuizDto } from '../../quizzes/dto';
 @Controller({ path: 'admin/quizzes', version: '1' })
 // @UseGuards(JwtAuthGuard, AdminGuard) // Uncomment when guards are implemented
 export class AdminQuizzesController {
-  constructor(private readonly quizzesService: QuizzesService)
+  constructor(private readonly quizzesService: QuizzesService) {}
 
 
   @Post()

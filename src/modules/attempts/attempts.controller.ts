@@ -20,7 +20,7 @@ import { JwtAuthGuard } from '../../common/guards';
 @Controller({ version: '1' })
 @UseGuards(JwtAuthGuard)
 export class AttemptsController {
-    constructor(private readonly attemptsService: AttemptsService)
+    constructor(private readonly attemptsService: AttemptsService) {}
 
 
     @Post('quizzes/:quizId/start')

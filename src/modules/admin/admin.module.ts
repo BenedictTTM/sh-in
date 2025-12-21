@@ -7,4 +7,4 @@ import { QuizzesModule } from '../quizzes/quizzes.module';
   imports: [QuizzesModule],
   controllers: [AdminQuizzesController],
 })
-export class AdminModule
+export class AdminModule { }

@@ -3,7 +3,7 @@ import { StatsService } from './stats.service';
 
 @Controller('users/:id/stats')
 export class StatsController {
-    constructor(private readonly statsService: StatsService)
+    constructor(private readonly statsService: StatsService) {}
 
     @Get()
     async getStats(@Param('id', ParseIntPipe) userId: number) {

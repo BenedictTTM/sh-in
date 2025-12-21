@@ -5,7 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class GamemodeService {
     private activeGames = new Map<string, any>();
 
-    constructor(private prisma: PrismaService)
+    constructor(private prisma: PrismaService) {}
 
     createGame(gameId: string) {
         this.activeGames.set(gameId, { players: [], status: 'waiting' });

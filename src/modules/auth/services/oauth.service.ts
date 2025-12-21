@@ -13,7 +13,7 @@ export class OAuthService {
     private readonly prisma: PrismaService,
     private readonly tokenService: TokenService,
     private readonly configService: ConfigService,
-  )
+  ) {}
 
   async authenticateOAuthUser(oauthUser: OAuthUserDto): Promise<{
     user: {

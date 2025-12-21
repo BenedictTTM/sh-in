@@ -19,7 +19,7 @@ export class EnergyController {
     constructor(
         private readonly energyService: EnergyService,
         private readonly diamondsService: DiamondsService,
-    )
+    ) {}
 
     @Get()
     async getEnergy(@Request() req) {

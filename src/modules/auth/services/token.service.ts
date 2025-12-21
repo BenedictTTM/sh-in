@@ -20,7 +20,7 @@ export class TokenService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
-  )
+  ) {}
 
 
   async generateTokens(

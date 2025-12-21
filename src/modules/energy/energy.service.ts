@@ -16,7 +16,7 @@ export class EnergyService {
     private readonly REGENERATION_RATE_PER_HOUR = 2;
     private readonly MAX_ENERGY_DEFAULT = 30;
 
-    constructor(private readonly prisma: PrismaService)
+    constructor(private readonly prisma: PrismaService) { }
 
 
     async getEnergy(userId: number): Promise<{ energy: number; maxEnergy: number; nextRefillAt: Date | null }> {
@@ -142,7 +142,7 @@ export class EnergyService {
                     balanceBefore: energy,
                     balanceAfter: updatedStats.energy,
                     reason: params.reason,
-                    metadata: params.metadata || ,
+                    metadata: params.metadata || {},
                 },
             });
         });

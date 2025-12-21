@@ -5,7 +5,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 @Controller('diamonds')
 @UseGuards(JwtAuthGuard)
 export class DiamondsController {
-    constructor(private readonly diamondsService: DiamondsService)
+    constructor(private readonly diamondsService: DiamondsService) {}
 
     @Get()
     async getBalance(@Request() req) {

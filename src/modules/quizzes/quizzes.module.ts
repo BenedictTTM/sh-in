@@ -11,4 +11,4 @@ import { AuthModule } from '../auth/auth.module';
   providers: [QuizzesService, PrismaService],
   exports: [QuizzesService],
 })
-export class QuizzesModule
+export class QuizzesModule { }

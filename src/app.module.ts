@@ -29,4 +29,4 @@ import { GamemodeModule } from './modules/gamemode/gamemode.module';
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
-export class AppModule
+export class AppModule { }

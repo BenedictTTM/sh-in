@@ -23,7 +23,7 @@ export class AttemptsService {
     private readonly statsService: StatsService,
     private readonly leaderboardService: LeaderboardService,
     private readonly diamondsService: DiamondsService,
-  )
+  ) {}
 
   async startAttempt(
     quizId: number,

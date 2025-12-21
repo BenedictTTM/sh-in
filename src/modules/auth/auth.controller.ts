@@ -33,7 +33,7 @@ export class AuthController {
     private readonly logoutService: LogoutService,
     private readonly refreshTokenService: RefreshTokenService,
     private readonly passwordResetService: PasswordResetService,
-  )
+  ) {}
 
 
   @Post('signup')

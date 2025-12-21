@@ -17,7 +17,7 @@ export class LoginService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly tokenService: TokenService,
-  )
+  ) {}
 
   async login(dto: LoginDto): Promise<{
     user: {

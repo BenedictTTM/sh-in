@@ -7,7 +7,7 @@ import * as bcrypt from 'bcrypt';
 export class PasswordResetService {
   private readonly logger = new Logger(PasswordResetService.name);
 
-  constructor(private readonly prisma: PrismaService)
+  constructor(private readonly prisma: PrismaService) {}
 
   async requestPasswordReset(email: string): Promise<{
     message: string;

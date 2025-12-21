@@ -24,7 +24,7 @@ export class GamemodeGateway
 
     private logger: Logger = new Logger('GamemodeGateway');
 
-    constructor(private readonly gamemodeService: GamemodeService)
+    constructor(private readonly gamemodeService: GamemodeService) {}
 
     afterInit(server: Server) {
         this.logger.log('GamemodeGateway initialized');

@@ -3,7 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class StatsService {
-    constructor(private prisma: PrismaService)
+    constructor(private prisma: PrismaService) {}
 
     async getStats(userId: number) {
         const stats = await this.prisma.userStats.findUnique({

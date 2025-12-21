@@ -6,7 +6,7 @@ import { UserProfileDto } from './dto/user-profile.dto';
 export class UsersService {
     private readonly logger = new Logger(UsersService.name);
 
-    constructor(private readonly prisma: PrismaService)
+    constructor(private readonly prisma: PrismaService) { }
 
 
     async getUserStats(userId: number) {
@@ -94,7 +94,7 @@ export class UsersService {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
-        const updateData: any = ;
+        const updateData: any = {};
 
         if (type === 'study') {
 

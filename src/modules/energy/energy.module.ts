@@ -12,4 +12,4 @@ import { AuthModule } from '../auth/auth.module';
     providers: [EnergyService, PrismaService],
     exports: [EnergyService],
 })
-export class EnergyModule
+export class EnergyModule { }

@@ -16,4 +16,4 @@ import { DiamondsModule } from '../diamonds/diamonds.module';
   exports: [AttemptsService],
 })
 
-export class AttemptsModule
+export class AttemptsModule { }

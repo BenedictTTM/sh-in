@@ -8,7 +8,7 @@ import { TokenService } from '../../modules/auth/services/token.service';
 
 @Injectable()
 export class OptionalJwtAuthGuard implements CanActivate {
-    constructor(private readonly tokenService: TokenService)
+    constructor(private readonly tokenService: TokenService) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();

@@ -3,7 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class LeaderboardService {
-    constructor(private prisma: PrismaService)
+    constructor(private prisma: PrismaService) {}
 
     private getCurrentMonthRange() {
         const now = new Date();

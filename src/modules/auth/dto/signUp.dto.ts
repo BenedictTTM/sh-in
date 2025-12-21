@@ -9,7 +9,7 @@ import {
 
 
 export class SignUpDto {
-  @IsEmail(, { message: 'Please provide a valid email address' })
+  @IsEmail({}, { message: 'Please provide a valid email address' })
   @IsNotEmpty({ message: 'Email is required' })
   @MaxLength(255, { message: 'Email must not exceed 255 characters' })
   email: string;

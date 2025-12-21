@@ -14,7 +14,7 @@ import {
 export class DiamondsService {
     private readonly logger = new Logger(DiamondsService.name);
 
-    constructor(private readonly prisma: PrismaService)
+    constructor(private readonly prisma: PrismaService) {}
 
 
     async getBalance(userId: number): Promise<{ diamonds: number }> {

@@ -9,7 +9,7 @@ import { CreateQuizDto, UpdateQuizDto } from './dto';
 
 @Injectable()
 export class QuizzesService {
-  constructor(private readonly prisma: PrismaService)
+  constructor(private readonly prisma: PrismaService) {}
 
   async findAllPublished(userId?: number) {
     const quizzes = await this.prisma.quiz.findMany({
