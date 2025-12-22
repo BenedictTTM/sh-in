@@ -1,6 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import { v2 as cloudinary } from 'cloudinary';
+import type { Express } from 'express';
+
+jest.mock('cloudinary', () => ({
+    v2: {
+        uploader: {
+            upload_stream: jest.fn(),
+        },
+    },
+}));
 
 describe('UsersService', () => {
     let service: UsersService;
@@ -19,6 +29,7 @@ describe('UsersService', () => {
         },
         user: {
             findUnique: jest.fn(),
+            update: jest.fn(),
         },
         attempt: {
             count: jest.fn()
@@ -26,6 +37,7 @@ describe('UsersService', () => {
     };
 
     beforeEach(async () => {
+        jest.clearAllMocks();
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 UsersService,
@@ -78,29 +90,52 @@ describe('UsersService', () => {
         });
     });
 
-    describe('getUserProfile', () => {
-        it('should return user profile data', async () => {
-            mockPrismaService.user.findUnique.mockResolvedValue({
-                id: 1,
-                firstName: 'John',
-                lastName: 'Doe',
-                school: 'MIT',
-                profilePicture: 'url',
+    describe('updateProfile', () => {
+        const mockFile = {
+            buffer: Buffer.from('test'),
+        } as Express.Multer.File;
+
+        it('should update profile and upload image', async () => {
+            const mockUploadStream = jest.fn((options, callback) => {
+                callback(null, { secure_url: 'http://cloudinary.com/image.jpg' });
+                return { end: jest.fn() };
+            });
+            (cloudinary.uploader.upload_stream as jest.Mock).mockImplementation(mockUploadStream);
+
+            mockPrismaService.user.update.mockResolvedValue({
+                firstName: 'Updated',
+                lastName: 'User',
+                school: 'New School',
+                profilePicture: 'http://cloudinary.com/image.jpg',
+                email: 'test@example.com',
             });
 
-            const result = await service.getUserProfile(1);
+            const result = await service.updateProfile(1, { firstName: 'Updated' }, mockFile);
 
-            expect(result).toEqual({
-                name: 'John Doe',
-                school: 'MIT',
-                profilePicture: 'url',
-            });
+            expect(cloudinary.uploader.upload_stream).toHaveBeenCalled();
+            expect(mockPrismaService.user.update).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    data: expect.objectContaining({
+                        profilePicture: 'http://cloudinary.com/image.jpg',
+                    }),
+                }),
+            );
+            expect(result.profilePicture).toBe('http://cloudinary.com/image.jpg');
         });
 
-        it('should throw NotFoundException if user does not exist', async () => {
-            mockPrismaService.user.findUnique.mockResolvedValue(null);
+        it('should update profile without image', async () => {
+            mockPrismaService.user.update.mockResolvedValue({
+                firstName: 'Updated',
+                lastName: 'User',
+                school: 'New School',
+                profilePicture: 'old_url',
+                email: 'test@example.com',
+            });
 
-            await expect(service.getUserProfile(999)).rejects.toThrow('User not found');
+            await service.updateProfile(1, { firstName: 'Updated' });
+
+            expect(cloudinary.uploader.upload_stream).not.toHaveBeenCalled();
+            expect(mockPrismaService.user.update).toHaveBeenCalled();
         });
     });
 });

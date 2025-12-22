@@ -8,7 +8,11 @@ import {
     UnauthorizedException,
     Patch,
     Body,
+    UseInterceptors,
+    UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Express } from 'express';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UserProfileDto } from './dto/user-profile.dto';
@@ -45,6 +49,7 @@ export class UsersController {
 
     @Patch('me')
     @UseGuards(JwtAuthGuard)
+    @UseInterceptors(FileInterceptor('file'))
     @ApiOperation({ summary: 'Update current user profile' })
     @ApiResponse({
         status: 200,
@@ -54,8 +59,9 @@ export class UsersController {
     async updateProfile(
         @Req() req: any,
         @Body() updateProfileDto: UpdateProfileDto,
+        @UploadedFile() file?: Express.Multer.File,
     ) {
-        return this.usersService.updateProfile(req.user.id, updateProfileDto);
+        return this.usersService.updateProfile(req.user.id, updateProfileDto, file);
     }
 
     @Get('me/heatmap')

@@ -61,7 +61,7 @@ export class AuthController {
       return res.status(302).redirect(redirectUrl);
     } catch (error) {
       console.error('❌ OAuth Callback Error:', error);
-      const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+      const frontendUrl = this.configService.get<string>('FRONTEND_URL') ;
       return res.redirect(`${frontendUrl}/auth/login?error=oauth_failed`);
     }
   }

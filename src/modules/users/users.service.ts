@@ -2,6 +2,8 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserProfileDto } from './dto/user-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { v2 as cloudinary } from 'cloudinary';
+import { Express } from 'express';
 
 @Injectable()
 export class UsersService {
@@ -173,11 +175,23 @@ export class UsersService {
         };
     }
 
-    async updateProfile(userId: number, updateDto: UpdateProfileDto): Promise<UserProfileDto> {
+    async updateProfile(userId: number, updateDto: UpdateProfileDto, file?: Express.Multer.File): Promise<UserProfileDto> {
+        let profilePictureUrl: string | undefined = undefined;
+
+        if (file) {
+            try {
+                profilePictureUrl = await this.uploadImage(file);
+            } catch (error) {
+                this.logger.error(`Failed to upload profile picture for user ${userId}`, error);
+                throw new Error('Failed to upload profile picture. Please try again.');
+            }
+        }
+
         const user = await this.prisma.user.update({
             where: { id: userId },
             data: {
                 ...updateDto,
+                ...(profilePictureUrl ? { profilePicture: profilePictureUrl } : {}),
             },
             select: {
                 firstName: true,
@@ -194,5 +208,35 @@ export class UsersService {
             profilePicture: user.profilePicture,
             email: user.email,
         };
+    }
+
+    private async uploadImage(file: Express.Multer.File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const upload = cloudinary.uploader.upload_stream(
+                {
+                    folder: 'sharks_profiles',
+                    resource_type: 'auto',
+                },
+                (error, result) => {
+                    if (error) {
+                        this.logger.error(`Cloudinary upload failed: ${error.message}`, error);
+                        return reject(new Error('Image upload failed'));
+                    }
+                    if (!result) {
+                        this.logger.error('Cloudinary upload returned no result');
+                        return reject(new Error('Image upload failed - no result'));
+                    }
+                    resolve(result.secure_url);
+                },
+            );
+
+            // Handle stream errors
+            upload.on('error', (error) => {
+                this.logger.error(`Cloudinary stream error: ${error.message}`, error);
+                reject(error);
+            });
+
+            upload.end(file.buffer);
+        });
     }
 }
