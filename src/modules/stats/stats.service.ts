@@ -3,7 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class StatsService {
-    constructor(private prisma: PrismaService) {}
+    constructor(private prisma: PrismaService) { }
 
     async getStats(userId: number) {
         const stats = await this.prisma.userStats.findUnique({
@@ -17,6 +17,26 @@ export class StatsService {
         }
 
         return stats;
+    }
+
+    async getGlobalUserStats() {
+        const totalUsers = await this.prisma.user.count({
+            where: { deletedAt: null },
+        });
+
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        const onlineUsers = await this.prisma.userStats.count({
+            where: {
+                lastActivityAt: {
+                    gte: fiveMinutesAgo,
+                },
+            },
+        });
+
+        return {
+            totalUsers,
+            onlineUsers,
+        };
     }
 
     async updateStats(userId: number, data: { xp?: number; gems?: number }) {

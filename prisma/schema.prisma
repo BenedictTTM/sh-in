@@ -202,6 +202,8 @@ model Quiz {
   description String?  @db.Text
   
   // Quiz Configuration
+  subject     String   @default("random") @db.VarChar(50) // maths, science, social, english, random
+  difficulty  String   @default("easy") @db.VarChar(20) @map("difficulty") // easy, moderate, hard
   timeLimit   Int?     @map("time_limit") // in seconds, null = no limit
   passingScore Int?    @map("passing_score") // minimum score to pass
   maxAttempts Int?     @map("max_attempts") // null = unlimited
