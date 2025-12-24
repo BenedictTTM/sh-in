@@ -1,0 +1,79 @@
+[
+    {
+        "title": "Uploaded Quiz 1",
+        "description": "This is a quiz uploaded via JSON.",
+        "subject": "maths",
+        "timeLimit": 600,
+        "passingScore": 2,
+        "maxAttempts": 3,
+        "questions": [
+            {
+                "text": "What is 2 + 2?",
+                "points": 1,
+                "choices": [
+                    {
+                        "text": "3",
+                        "isCorrect": false
+                    },
+                    {
+                        "text": "4",
+                        "isCorrect": true
+                    },
+                    {
+                        "text": "5",
+                        "isCorrect": false
+                    }
+                ],
+                "correctChoiceIndexes": [
+                    1
+                ]
+            },
+            {
+                "text": "What is the capital of France?",
+                "points": 1,
+                "choices": [
+                    {
+                        "text": "Berlin",
+                        "isCorrect": false
+                    },
+                    {
+                        "text": "Paris",
+                        "isCorrect": true
+                    },
+                    {
+                        "text": "London",
+                        "isCorrect": false
+                    }
+                ],
+                "correctChoiceIndexes": [
+                    1
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Uploaded Quiz 2",
+        "description": "Second uploaded quiz.",
+        "subject": "science",
+        "timeLimit": 300,
+        "questions": [
+            {
+                "text": "Is the sky blue?",
+                "points": 5,
+                "choices": [
+                    {
+                        "text": "Yes",
+                        "isCorrect": true
+                    },
+                    {
+                        "text": "No",
+                        "isCorrect": false
+                    }
+                ],
+                "correctChoiceIndexes": [
+                    0
+                ]
+            }
+        ]
+    }
+]

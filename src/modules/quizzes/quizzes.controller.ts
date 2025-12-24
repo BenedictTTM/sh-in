@@ -1,11 +1,12 @@
-import { Controller, Get, Param, ParseIntPipe, Request, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Request, Post, Body, UseGuards  } from '@nestjs/common';
+
 import { QuizzesService } from './quizzes.service';
 import { CreateQuizDto } from './dto';
 import { OptionalJwtAuthGuard } from '../../common/guards/optional-jwt-auth.guard';
 
 @Controller({ path: 'quizzes', version: '1' })
 export class QuizzesController {
-  constructor(private readonly quizzesService: QuizzesService) {}
+  constructor(private readonly quizzesService: QuizzesService) { }
 
   @Post()
   async create(@Body() createQuizDto: CreateQuizDto, @Request() req: { user?: { id: number } }) {
@@ -20,6 +21,8 @@ export class QuizzesController {
     return this.quizzesService.findAllPublished(userId);
   }
 
+
+
   @Get(':quizId')
   @UseGuards(OptionalJwtAuthGuard)
   async findOne(
@@ -29,4 +32,6 @@ export class QuizzesController {
     const userId = req.user?.id;
     return this.quizzesService.findById(quizId, userId);
   }
+
 }
+

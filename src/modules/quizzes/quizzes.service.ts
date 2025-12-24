@@ -6,10 +6,11 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateQuizDto, UpdateQuizDto } from './dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class QuizzesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async findAllPublished(userId?: number) {
     const quizzes = await this.prisma.quiz.findMany({
@@ -55,6 +56,33 @@ export class QuizzesService {
       isCompleted: userId ? quiz.attempts?.length > 0 : false,
       attempts: undefined,
     }));
+    return quizzes.map((quiz: any) => ({
+      ...quiz,
+      isCompleted: userId ? quiz.attempts?.length > 0 : false,
+      attempts: undefined,
+    }));
+  }
+
+  async findOneAdmin(quizId: number) {
+    const quiz = await this.prisma.quiz.findUnique({
+      where: { id: quizId, deletedAt: null },
+      include: {
+        questions: {
+          include: {
+            choices: {
+              orderBy: { order: 'asc' },
+            },
+          },
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+
+    if (!quiz) {
+      throw new NotFoundException(`Quiz with ID ${quizId} not found`);
+    }
+
+    return quiz;
   }
 
   async findById(quizId: number, userId?: number) {
@@ -108,7 +136,20 @@ export class QuizzesService {
     return quiz;
   }
 
-  async create(createQuizDto: CreateQuizDto, userId: number) {
+  async import(createQuizDtos: CreateQuizDto[], userId: number) {
+    return this.prisma.$transaction(async (tx) => {
+      const createdQuizzes: any[] = [];
+      for (const dto of createQuizDtos) {
+        createdQuizzes.push(await this.create(dto, userId, tx));
+      }
+      return createdQuizzes;
+    }, {
+      maxWait: 5000, // default: 2000
+      timeout: 20000, // default: 5000
+    });
+  }
+
+  async create(createQuizDto: CreateQuizDto, userId: number, tx: Prisma.TransactionClient = this.prisma) {
     this.validateQuizStructure(createQuizDto);
 
     const maxScore = createQuizDto.questions.reduce(
@@ -116,10 +157,11 @@ export class QuizzesService {
       0,
     );
 
-    const quiz = await this.prisma.quiz.create({
+    const quiz = await tx.quiz.create({
       data: {
         title: createQuizDto.title,
         description: createQuizDto.description,
+        subject: createQuizDto.subject || 'random',
         timeLimit: createQuizDto.timeLimit,
         passingScore:
           createQuizDto.passingScore || Math.floor(maxScore * 0.7),
@@ -157,7 +199,7 @@ export class QuizzesService {
     return quiz;
   }
 
-  async update(quizId: number, updateQuizDto: UpdateQuizDto, userId: number) {
+  async update(quizId: number, updateQuizDto: UpdateQuizDto, userId: number, isAdmin: boolean = false) {
     const quiz = await this.prisma.quiz.findUnique({
       where: { id: quizId, deletedAt: null },
       include: {
@@ -173,9 +215,7 @@ export class QuizzesService {
     }
 
 
-    if (quiz.createdById !== userId) {
-      throw new ForbiddenException('Not authorized to update this quiz');
-    }
+
 
     if (quiz.attempts.length > 0) {
       throw new BadRequestException(
@@ -263,6 +303,7 @@ export class QuizzesService {
         data: {
           title: updateQuizDto.title,
           description: updateQuizDto.description,
+          subject: updateQuizDto.subject,
           timeLimit: updateQuizDto.timeLimit,
           passingScore: updateQuizDto.passingScore,
           maxAttempts: updateQuizDto.maxAttempts,
@@ -280,6 +321,9 @@ export class QuizzesService {
       });
 
       return updated;
+    }, {
+      maxWait: 5000,
+      timeout: 20000,
     });
   }
 
@@ -317,6 +361,41 @@ export class QuizzesService {
       data: {
         isPublished: true,
         publishedAt: quiz.publishedAt || new Date(),
+      },
+    });
+  }
+
+  async findAllAdmin(userId: number) {
+    // For now, return all quizzes not deleted. 
+    // If we want to restrict to only own quizzes, add where: { createdById: userId }
+    return this.prisma.quiz.findMany({
+      where: {
+        deletedAt: null,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        _count: {
+          select: { questions: true },
+        },
+      },
+    });
+  }
+
+  async delete(quizId: number) {
+    const quiz = await this.prisma.quiz.findUnique({
+      where: { id: quizId, deletedAt: null },
+    });
+
+    if (!quiz) {
+      throw new NotFoundException(`Quiz with ID ${quizId} not found`);
+    }
+
+    return this.prisma.quiz.update({
+      where: { id: quizId },
+      data: {
+        deletedAt: new Date(),
       },
     });
   }

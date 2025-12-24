@@ -7,6 +7,7 @@ import {
   ArrayMinSize,
   Min,
   MaxLength,
+  IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -62,6 +63,11 @@ export class CreateQuizDto {
   @IsString()
   @MaxLength(5000)
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['maths', 'science', 'social', 'english', 'random'])
+  subject?: string;
 
   @IsOptional()
   @IsInt()
