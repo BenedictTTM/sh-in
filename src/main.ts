@@ -11,6 +11,7 @@ async function bootstrap() {
     ...envOrigins,
     'http://localhost:3000',
     'https://sh-out.vercel.app',
+    'https://admin-one-kohl.vercel.app'
   ];
   app.enableCors({
     origin: corsOrigins,
