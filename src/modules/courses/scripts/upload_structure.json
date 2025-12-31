@@ -1,0 +1,33 @@
+{
+    "units": [
+        {
+            "title": "string (Required)",
+            "description": "string (Optional)",
+            "order": "integer (Optional, default: auto-increment)",
+            "lessons": [
+                {
+                    "title": "string (Required)",
+                    "difficulty": "string (Optional, default: 'EASY', values: 'EASY', 'MEDIUM', 'HARD')",
+                    "order": "integer (Optional, default: auto-increment)",
+                    "challenges": [
+                        {
+                            "question": "string (Required)",
+                            "explanation": "string (Optional)",
+                            "solution": "string (Optional)",
+                            "type": "string (Optional, default: 'SELECT')",
+                            "order": "integer (Optional, default: auto-increment)",
+                            "options": [
+                                {
+                                    "text": "string (Required)",
+                                    "correct": "boolean (Required)",
+                                    "imageSrc": "string (Optional)",
+                                    "audioSrc": "string (Optional)"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

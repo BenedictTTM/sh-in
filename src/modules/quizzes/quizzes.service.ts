@@ -185,6 +185,7 @@ export class QuizzesService {
         },
       },
       include: {
+        
         questions: {
           include: {
             choices: true,

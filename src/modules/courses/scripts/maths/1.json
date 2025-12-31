@@ -1,0 +1,539 @@
+{
+    "units": [
+        {
+            "title": "WASSCE Core Mathematics",
+            "description": "WAEC-standard multiple-choice questions for WASSCE candidates, set and moderated at examiner level.",
+            "order": 1,
+            "lessons": [
+                {
+                    "title": "Number and Basic Operations",
+                    "difficulty": "EASY",
+                    "order": 1,
+                    "challenges": [
+                        {
+                            "question": "Evaluate: 3/4 of 120.",
+                            "explanation": "The question tests understanding of fractions as operators.",
+                            "solution": "3/4 × 120 = 90.",
+                            "type": "SELECT",
+                            "order": 1,
+                            "options": [
+                                {
+                                    "text": "30",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "60",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "90",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "160",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "Express 0.125 as a fraction in its simplest form.",
+                            "explanation": "This tests conversion from decimal to fraction.",
+                            "solution": "0.125 = 125/1000 = 1/8.",
+                            "type": "SELECT",
+                            "order": 2,
+                            "options": [
+                                {
+                                    "text": "1/4",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "1/5",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "1/8",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "1/10",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "Find the LCM of 6 and 9.",
+                            "explanation": "LCM is the smallest common multiple of given numbers.",
+                            "solution": "Multiples of 6: 6,12,18. Multiples of 9: 9,18. LCM = 18.",
+                            "type": "SELECT",
+                            "order": 3,
+                            "options": [
+                                {
+                                    "text": "9",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "18",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "36",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "54",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "Simplify: 2² × 2³.",
+                            "explanation": "This tests the laws of indices.",
+                            "solution": "2² × 2³ = 2⁵ = 32.",
+                            "type": "SELECT",
+                            "order": 4,
+                            "options": [
+                                {
+                                    "text": "16",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "32",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "64",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "128",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "What is the value of √144?",
+                            "explanation": "Square root is the number that multiplies by itself to give the original number.",
+                            "solution": "√144 = 12.",
+                            "type": "SELECT",
+                            "order": 5,
+                            "options": [
+                                {
+                                    "text": "10",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "11",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "12",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "14",
+                                    "correct": false
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "title": "Algebra",
+                    "difficulty": "MEDIUM",
+                    "order": 2,
+                    "challenges": [
+                        {
+                            "question": "Solve for x: 2x + 5 = 15.",
+                            "explanation": "This is a simple linear equation.",
+                            "solution": "2x = 10, hence x = 5.",
+                            "type": "SELECT",
+                            "order": 6,
+                            "options": [
+                                {
+                                    "text": "3",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "5",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "7",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "10",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "Factorize: x² − 9.",
+                            "explanation": "This is a difference of two squares.",
+                            "solution": "x² − 9 = (x − 3)(x + 3).",
+                            "type": "SELECT",
+                            "order": 7,
+                            "options": [
+                                {
+                                    "text": "(x − 9)(x + 1)",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "(x − 3)(x + 3)",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "(x − 1)(x − 9)",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "(x − 3)²",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "If 3x = 27, find x.",
+                            "explanation": "Tests solving simple equations.",
+                            "solution": "x = 27 ÷ 3 = 9.",
+                            "type": "SELECT",
+                            "order": 8,
+                            "options": [
+                                {
+                                    "text": "6",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "9",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "12",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "18",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "Simplify: 5a − 2a + 3.",
+                            "explanation": "Like terms are collected together.",
+                            "solution": "5a − 2a = 3a, so expression is 3a + 3.",
+                            "type": "SELECT",
+                            "order": 9,
+                            "options": [
+                                {
+                                    "text": "3a",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "7a + 3",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "3a + 3",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "a + 3",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "Evaluate: (x + 2) when x = 4.",
+                            "explanation": "This tests substitution into algebraic expressions.",
+                            "solution": "4 + 2 = 6.",
+                            "type": "SELECT",
+                            "order": 10,
+                            "options": [
+                                {
+                                    "text": "4",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "6",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "8",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "10",
+                                    "correct": false
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "title": "Geometry and Mensuration",
+                    "difficulty": "MEDIUM",
+                    "order": 3,
+                    "challenges": [
+                        {
+                            "question": "Find the perimeter of a rectangle of length 8 cm and width 5 cm.",
+                            "explanation": "Perimeter of a rectangle = 2(l + w).",
+                            "solution": "2(8 + 5) = 26 cm.",
+                            "type": "SELECT",
+                            "order": 11,
+                            "options": [
+                                {
+                                    "text": "13 cm",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "26 cm",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "40 cm",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "80 cm",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "What is the sum of angles in a triangle?",
+                            "explanation": "This is a basic geometric fact.",
+                            "solution": "The sum of interior angles of a triangle is 180°.",
+                            "type": "SELECT",
+                            "order": 12,
+                            "options": [
+                                {
+                                    "text": "90°",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "180°",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "270°",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "360°",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "Find the area of a triangle with base 10 cm and height 6 cm.",
+                            "explanation": "Area of a triangle = 1/2 × base × height.",
+                            "solution": "1/2 × 10 × 6 = 30 cm².",
+                            "type": "SELECT",
+                            "order": 13,
+                            "options": [
+                                {
+                                    "text": "16 cm²",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "30 cm²",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "60 cm²",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "120 cm²",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "How many sides does a hexagon have?",
+                            "explanation": "A hexagon is a polygon with six sides.",
+                            "solution": "Hexagon has 6 sides.",
+                            "type": "SELECT",
+                            "order": 14,
+                            "options": [
+                                {
+                                    "text": "5",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "6",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "7",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "8",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "A straight line forms an angle of how many degrees?",
+                            "explanation": "A straight angle is half of a full rotation.",
+                            "solution": "A straight line forms 180°.",
+                            "type": "SELECT",
+                            "order": 15,
+                            "options": [
+                                {
+                                    "text": "90°",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "120°",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "180°",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "360°",
+                                    "correct": false
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "title": "Statistics and Probability",
+                    "difficulty": "HARD",
+                    "order": 4,
+                    "challenges": [
+                        {
+                            "question": "Find the mean of 2, 4, 6, and 8.",
+                            "explanation": "Mean is the sum divided by the number of observations.",
+                            "solution": "Mean = (2 + 4 + 6 + 8) ÷ 4 = 5.",
+                            "type": "SELECT",
+                            "order": 16,
+                            "options": [
+                                {
+                                    "text": "4",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "5",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "6",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "8",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "What is the probability of getting a head when a fair coin is tossed?",
+                            "explanation": "A fair coin has two equally likely outcomes.",
+                            "solution": "Probability = 1/2.",
+                            "type": "SELECT",
+                            "order": 17,
+                            "options": [
+                                {
+                                    "text": "1",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "1/4",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "1/2",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "2",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "Find the range of the data: 3, 7, 10, 15.",
+                            "explanation": "Range = highest value − lowest value.",
+                            "solution": "15 − 3 = 12.",
+                            "type": "SELECT",
+                            "order": 18,
+                            "options": [
+                                {
+                                    "text": "7",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "10",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "12",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "18",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "If the probability of an event is 0, the event is said to be?",
+                            "explanation": "Probability zero means the event cannot occur.",
+                            "solution": "The event is impossible.",
+                            "type": "SELECT",
+                            "order": 19,
+                            "options": [
+                                {
+                                    "text": "Certain",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "Likely",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "Impossible",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "Random",
+                                    "correct": false
+                                }
+                            ]
+                        },
+                        {
+                            "question": "What is the median of the numbers: 1, 3, 5, 7, 9?",
+                            "explanation": "Median is the middle value when data is arranged in order.",
+                            "solution": "The middle value is 5.",
+                            "type": "SELECT",
+                            "order": 20,
+                            "options": [
+                                {
+                                    "text": "3",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "5",
+                                    "correct": true
+                                },
+                                {
+                                    "text": "7",
+                                    "correct": false
+                                },
+                                {
+                                    "text": "9",
+                                    "correct": false
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

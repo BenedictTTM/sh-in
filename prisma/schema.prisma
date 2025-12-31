@@ -49,6 +49,10 @@ model User {
   attempts            Attempt[]
   stats               UserStats?
   activityLogs        UserActivityLog[]
+  
+  // Learning Path Relations
+  challengeProgress   ChallengeProgress[]
+  learningProgress    UserProgress? // The new UserProgress model (mapped to user_progress_learning)
 
   @@index([email])
   @@index([googleId])
@@ -361,6 +365,7 @@ model Answer {
   @@map("answers")
 }
 
+
 // ============================================================================
 // CURRENCY TRANSACTION MODEL
 // ============================================================================
@@ -393,4 +398,159 @@ model CurrencyTransaction {
   @@index([currency])
   @@index([createdAt])
   @@map("currency_transactions")
+}
+
+// ============================================================================
+// LEARNING PATH MODELS (Inspired by quizard22)
+// ============================================================================
+
+// 1. COURSE (Top level container, e.g. "Spanish", "Math")
+model Course {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(255)
+  imageSrc    String?   @map("image_src") @db.Text
+  description String?  @db.Text
+  
+  // Publishing
+  isPublished Boolean  @default(false) @map("is_published")
+  
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  units       Unit[]
+  userProgress UserProgress[]
+  
+  @@map("courses")
+}
+
+// 2. UNIT (Chapter level, e.g. "Unit 1: Basics")
+model Unit {
+  id          Int      @id @default(autoincrement())
+  courseId    Int      @map("course_id")
+  
+  title       String   @db.VarChar(255)
+  description String   @db.Text
+  order       Int      // display order
+  
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
+  
+  @@index([courseId])
+  @@index([order])
+  @@map("units")
+}
+
+// 3. LESSON (Session level, e.g. "Lesson 1: Greetings")
+model Lesson {
+  id          Int      @id @default(autoincrement())
+  unitId      Int      @map("unit_id")
+  
+  title       String   @db.VarChar(255)
+  description String?  @db.Text
+  order       Int      // display order
+  difficulty  String   @default("EASY") @db.VarChar(20) // EASY, MEDIUM, HARD
+  
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  unit        Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  challenges  Challenge[]
+  
+  @@index([unitId])
+  @@index([order])
+  @@map("lessons")
+}
+
+// 4. CHALLENGE (Question level)
+// This mirrors the 'Challenge' concept from quizard22
+model Challenge {
+  id          Int      @id @default(autoincrement())
+  lessonId    Int      @map("lesson_id")
+  
+  type        String   @default("SELECT") @db.VarChar(50) // SELECT, ASSIST, LEGACY
+  question    String   @db.Text
+  order       Int      // display order within lesson
+  explanation String?  @db.Text
+  solution    String?  @db.Text
+  
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  options     ChallengeOption[]
+  progress    ChallengeProgress[]
+  
+  @@index([lessonId])
+  @@index([order])
+  @@map("challenges")
+}
+
+// 5. CHALLENGE OPTION (Answer Choices)
+model ChallengeOption {
+  id          Int      @id @default(autoincrement())
+  challengeId Int      @map("challenge_id")
+  
+  text        String   @db.Text
+  correct     Boolean  @map("is_correct")
+  imageSrc    String?  @map("image_src") @db.Text
+  audioSrc    String?  @map("audio_src") @db.Text
+  
+  // Relations
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  
+  @@index([challengeId])
+  @@map("challenge_options")
+}
+
+// 6. CHALLENGE PROGRESS (Tracking user completion)
+model ChallengeProgress {
+  id          Int      @id @default(autoincrement())
+  userId      Int      @map("user_id")
+  challengeId Int      @map("challenge_id")
+  
+  isCompleted Boolean  @default(false) @map("is_completed")
+  completedAt DateTime? @map("completed_at")
+  
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, challengeId]) // One record per user per challenge
+  @@index([userId])
+  @@index([challengeId])
+  @@map("challenge_progress")
+}
+
+// 7. USER PROGRESS (Active Course Tracking)
+// Tracks which course the user is currently focused on
+model UserProgress {
+  userId         Int      @id @map("user_id")
+  activeCourseId Int?     @map("active_course_id")
+  
+  // Currency/Stats mirrors (can overlap with UserStats, keeping separate for this module if needed)
+  hearts         Int      @default(5)
+  points         Int      @default(0)
+  
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeCourse   Course?  @relation(fields: [activeCourseId], references: [id], onDelete: SetNull)
+  
+  @@map("user_progress_learning")
 }

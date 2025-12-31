@@ -19,6 +19,7 @@ async function main() {
             stats: {
                 create: {
                     xp: 1250,
+                    currentLevel: 5, // Explicitly set level
                     energy: 5,
                     maxEnergy: 5,
                     diamonds: 100,
@@ -133,6 +134,79 @@ async function main() {
         console.log(`Quiz '${quizTitle}' created.`);
     } else {
         console.log(`Quiz '${quizTitle}' already exists.`);
+    }
+    // Seed Fixed Courses
+    const courses = [
+        {
+            title: "Maths",
+            imageSrc: "/images/courses/maths.png",
+            description: "Mathematics for Junior High School"
+        },
+        {
+            title: "Science",
+            imageSrc: "/images/courses/science.png",
+            description: "Integrated Science"
+        },
+        {
+            title: "Social Studies",
+            imageSrc: "/images/courses/social.png",
+            description: "Social Studies and Citizenship"
+        },
+        {
+            title: "English",
+            imageSrc: "/images/courses/english.png",
+            description: "English Language and Literature"
+        }
+    ];
+
+    for (const courseData of courses) {
+        const existingCourse = await prisma.course.findFirst({
+            where: { title: courseData.title }
+        });
+
+        if (!existingCourse) {
+            console.log(`Seeding course: ${courseData.title}`);
+            await prisma.course.create({
+                data: {
+                    ...courseData,
+                    isPublished: true,
+                    units: {
+                        create: [
+                            {
+                                title: "Unit 1: Introduction",
+                                description: `Basics of ${courseData.title}`,
+                                order: 1,
+                                lessons: {
+                                    create: [
+                                        {
+                                            title: "Lesson 1: Getting Started",
+                                            order: 1,
+                                            challenges: {
+                                                create: [
+                                                    {
+                                                        question: `What is the first topic in ${courseData.title}?`,
+                                                        type: "SELECT",
+                                                        order: 1,
+                                                        options: {
+                                                            create: [
+                                                                { text: "Topic A", correct: true },
+                                                                { text: "Topic B", correct: false }
+                                                            ]
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            });
+        } else {
+            console.log(`Course '${courseData.title}' already exists.`);
+        }
     }
 }
 
