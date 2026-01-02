@@ -20,7 +20,7 @@ export class TokenService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
-  ) {}
+  ) { }
 
 
   async generateTokens(
@@ -51,6 +51,10 @@ export class TokenService {
       ]);
 
       this.logger.debug(`Generated tokens for user: ${userId}`);
+      // DEBUG: Verify token expiration
+      const decoded = this.jwtService.decode(accessToken);
+      console.log('[TokenService] Generated Access Token Debug:', JSON.stringify(decoded));
+
 
       return {
         access_token: accessToken,
@@ -88,7 +92,9 @@ export class TokenService {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
-      this.logger.warn(`Invalid access token: ${errorMessage}`);
+      // DEBUG: Log the stack to find the caller
+      this.logger.warn(`Invalid access token: ${errorMessage}`, error instanceof Error ? error.stack : undefined);
+      console.log('Stack trace for invalid token:', new Error().stack);
       throw new UnauthorizedException('Invalid or expired access token');
     }
   }
