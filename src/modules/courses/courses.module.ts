@@ -4,8 +4,10 @@ import { CoursesController } from './courses.controller';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { AuthModule } from '../auth/auth.module';
 
+import { ContributionsModule } from '../contributions/contributions.module';
+
 @Module({
-    imports: [PrismaModule, AuthModule],
+    imports: [PrismaModule, AuthModule, ContributionsModule],
     controllers: [CoursesController],
     providers: [CoursesService],
     exports: [CoursesService],

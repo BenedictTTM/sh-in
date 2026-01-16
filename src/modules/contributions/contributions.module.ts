@@ -8,5 +8,6 @@ import { AuthModule } from '../auth/auth.module';
     imports: [AuthModule],
     controllers: [ContributionsController],
     providers: [ContributionsService, PrismaService],
+    exports: [ContributionsService],
 })
 export class ContributionsModule { }

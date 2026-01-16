@@ -23,7 +23,7 @@ export class AttemptsService {
     private readonly statsService: StatsService,
     private readonly leaderboardService: LeaderboardService,
     private readonly diamondsService: DiamondsService,
-  ) {}
+  ) { }
 
   async startAttempt(
     quizId: number,
@@ -103,6 +103,47 @@ export class AttemptsService {
 
 
 
+
+    // Check for existing in-progress attempts
+    const existingAttempt = quiz.attempts.find(
+      (a) => a.status === 'in_progress',
+    );
+
+    if (existingAttempt) {
+      // Check if expired
+      const now = new Date();
+
+      const fullAttempt = await this.prisma.attempt.findUnique({
+        where: { id: existingAttempt.id },
+      });
+
+      if (fullAttempt) {
+        if (fullAttempt.expiresAt && now > fullAttempt.expiresAt) {
+          // Expired - mark it and proceed to create new
+          await this.prisma.attempt.update({
+            where: { id: fullAttempt.id },
+            data: { status: 'expired', finishedAt: now },
+          });
+        } else {
+          // Valid - RESUME IT
+          return {
+            attemptId: fullAttempt.id,
+            attemptToken: fullAttempt.attemptToken,
+            expiresAt: fullAttempt.expiresAt,
+            startedAt: fullAttempt.startedAt,
+            resumed: true
+          };
+        }
+      }
+    }
+
+    // Check Max Attempts (optional but good practice since we have the data)
+    if (quiz.maxAttempts) {
+      const completedCount = quiz.attempts.filter(a => a.status === 'completed').length;
+      if (completedCount >= quiz.maxAttempts) {
+        throw new BadRequestException(`Maximum attempts (${quiz.maxAttempts}) reached for this quiz.`);
+      }
+    }
 
     await this.energyService.consumeEnergy(userId, {
       amount: 5,

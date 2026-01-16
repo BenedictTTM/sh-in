@@ -2,9 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCourseDto } from './dto';
 
+import { ContributionsService } from '../contributions/contributions.service';
+
 @Injectable()
 export class CoursesService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly contributionsService: ContributionsService
+    ) { }
 
     // Create a full course hierarchy
     // Structure:
@@ -340,8 +345,8 @@ export class CoursesService {
 
         // 3. Update User Stats / Currency (Simplified)
         if (isCorrect) {
-            // Add points/hearts logic here if needed
-            // For now, just return success
+            // Log activity for heatmap
+            await this.contributionsService.logActivity(userId);
         }
         // else { 
         //    deduct hearts?
