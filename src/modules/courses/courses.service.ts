@@ -32,6 +32,7 @@ export class CoursesService {
                         lessons: {
                             create: unit.lessons?.map((lesson, lIndex) => ({
                                 title: lesson.title,
+                                description: lesson.description,
                                 difficulty: lesson.difficulty || 'EASY',
                                 order: lesson.order ?? lIndex + 1,
                                 challenges: {
@@ -194,6 +195,7 @@ export class CoursesService {
                 lessons: {
                     create: createUnitDto.lessons?.map((lesson: any, lIndex: number) => ({
                         title: lesson.title,
+                        description: lesson.description,
                         order: lesson.order ?? lIndex + 1,
                         challenges: {
                             create: lesson.challenges?.map((challenge: any, cIndex) => ({
@@ -233,6 +235,7 @@ export class CoursesService {
             data: {
                 unitId,
                 title: createLessonDto.title,
+                description: createLessonDto.description,
                 difficulty: createLessonDto.difficulty || 'EASY',
                 order: createLessonDto.order ?? 1,
                 challenges: {
@@ -276,6 +279,7 @@ export class CoursesService {
                         lessons: {
                             create: unitData.lessons?.map((lesson: any, lIndex: number) => ({
                                 title: lesson.title,
+                                description: lesson.description,
                                 difficulty: lesson.difficulty || 'EASY',
                                 order: lesson.order ?? lIndex + 1,
                                 challenges: {
@@ -407,6 +411,30 @@ export class CoursesService {
 
         if (!lesson) throw new NotFoundException('Lesson not found');
         return lesson;
+    }
+
+    // Get Lesson Info (for Pre-Quiz Modal)
+    async getLessonInfo(id: number) {
+        const lesson = await this.prisma.lesson.findUnique({
+            where: { id },
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                difficulty: true,
+                _count: {
+                    select: { challenges: true }
+                }
+            }
+        });
+
+        if (!lesson) throw new NotFoundException('Lesson not found');
+
+        return {
+            ...lesson,
+            questionCount: lesson._count.challenges,
+            _count: undefined
+        };
     }
 
     async getDebugUser() {

@@ -75,4 +75,9 @@ export class CoursesController {
     findLesson(@Param('id', ParseIntPipe) id: number) {
         return this.coursesService.findLesson(id);
     }
+
+    @Get('lessons/:id/info')
+    getLessonInfo(@Param('id', ParseIntPipe) id: number) {
+        return this.coursesService.getLessonInfo(id);
+    }
 }

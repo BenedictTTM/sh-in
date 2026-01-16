@@ -43,6 +43,10 @@ export class CreateLessonDto {
 
     @IsString()
     @IsOptional()
+    description?: string;
+
+    @IsString()
+    @IsOptional()
     difficulty?: string;
 
     @IsInt()
