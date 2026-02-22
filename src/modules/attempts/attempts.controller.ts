@@ -10,7 +10,6 @@ import {
     HttpCode,
     HttpStatus,
     BadRequestException,
-    UnauthorizedException,
     UseGuards,
 } from '@nestjs/common';
 import { AttemptsService } from './attempts.service';
@@ -20,8 +19,7 @@ import { JwtAuthGuard } from '../../common/guards';
 @Controller({ version: '1' })
 @UseGuards(JwtAuthGuard)
 export class AttemptsController {
-    constructor(private readonly attemptsService: AttemptsService) {}
-
+    constructor(private readonly attemptsService: AttemptsService) { }
 
     @Post('quizzes/:quizId/start')
     @HttpCode(HttpStatus.CREATED)
@@ -51,13 +49,13 @@ export class AttemptsController {
         );
     }
 
-
     @Post('attempts/:attemptId/answer')
     @HttpCode(HttpStatus.OK)
     async submitAnswer(
         @Param('attemptId', ParseIntPipe) attemptId: number,
         @Body() submitAnswerDto: SubmitAnswerDto,
         @Headers('x-attempt-token') attemptToken: string,
+        @Request() req: { user: { id: number } },
     ) {
         if (!attemptToken) {
             throw new BadRequestException('X-Attempt-Token header is required');
@@ -67,9 +65,9 @@ export class AttemptsController {
             attemptId,
             submitAnswerDto,
             attemptToken,
+            req.user.id,
         );
     }
-
 
     @Post('attempts/:attemptId/finish')
     @HttpCode(HttpStatus.OK)
@@ -83,10 +81,8 @@ export class AttemptsController {
         }
 
         const userId = req.user.id;
-
         return this.attemptsService.finishAttempt(attemptId, attemptToken, userId);
     }
-
 
     @Get('attempts/:attemptId/result')
     async getResult(
@@ -96,7 +92,6 @@ export class AttemptsController {
         const userId = req.user.id;
         return this.attemptsService.getAttemptResult(attemptId, userId);
     }
-
 
     private extractIpAddress(req: {
         headers: {

@@ -3,130 +3,73 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class LeaderboardService {
-    constructor(private prisma: PrismaService) {}
-
-    private getCurrentMonthRange() {
-        const now = new Date();
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-        return { startOfMonth, endOfMonth };
-    }
+    constructor(private prisma: PrismaService) { }
 
     async getGlobalLeaderboard(limit: number = 10) {
-        const { startOfMonth, endOfMonth } = this.getCurrentMonthRange();
-
-
-        const leaderboard = await this.prisma.attempt.groupBy({
-            by: ['userId'],
-            where: {
-                finishedAt: {
-                    gte: startOfMonth,
-                    lte: endOfMonth,
+        // Aggregate from UserStats.xp — the single source of truth for a user's
+        // total XP (updated by BOTH quiz finishes and course challenge completions).
+        const leaderboard = await this.prisma.userStats.findMany({
+            select: {
+                userId: true,
+                xp: true,
+                user: {
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        school: true,
+                        profilePicture: true,
+                    },
                 },
-            },
-            _sum: {
-                score: true,
             },
             orderBy: {
-                _sum: {
-                    score: 'desc',
-                },
+                xp: 'desc',
             },
             take: limit,
         });
 
-
-        const userIds = leaderboard.map((entry) => entry.userId);
-        const users = await this.prisma.user.findMany({
-            where: {
-                id: { in: userIds },
-            },
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                school: true,
-                profilePicture: true,
-            },
-        });
-
-
-        return leaderboard.map((entry, index) => {
-            const user = users.find((u) => u.id === entry.userId);
-            return {
-                rank: index + 1,
-                score: entry._sum.score || 0,
-                user: user
-                    ? {
-                        id: user.id,
-                        firstName: user.firstName,
-                        lastName: user.lastName,
-                        school: user.school || undefined,
-                        profilePicture: user.profilePicture || undefined,
-                    }
-                    : {
-                        id: entry.userId,
-                        firstName: 'Unknown',
-                        lastName: 'User',
-                    },
-            };
-        });
+        return leaderboard.map((entry, index) => ({
+            rank: index + 1,
+            score: entry.xp,
+            user: entry.user
+                ? {
+                    id: entry.user.id,
+                    firstName: entry.user.firstName,
+                    lastName: entry.user.lastName,
+                    school: entry.user.school || undefined,
+                    profilePicture: entry.user.profilePicture || undefined,
+                }
+                : { id: entry.userId, firstName: 'Unknown', lastName: 'User' },
+        }));
     }
 
     async getUserRank(userId: number) {
-        const { startOfMonth, endOfMonth } = this.getCurrentMonthRange();
-
-
-        const userScoreAgg = await this.prisma.attempt.aggregate({
-            where: {
-                userId: userId,
-                finishedAt: {
-                    gte: startOfMonth,
-                    lte: endOfMonth,
-                },
-            },
-            _sum: {
-                score: true,
-            },
+        const userStats = await this.prisma.userStats.findUnique({
+            where: { userId },
+            select: { xp: true },
         });
 
-        const userScore = userScoreAgg._sum.score || 0;
+        const userXp = userStats?.xp ?? 0;
 
-        const rankResult = await this.prisma.$queryRaw<{ count: bigint }[]>`
-      SELECT COUNT(*) as count
-      FROM (
-        SELECT "user_id", SUM(score) as total_score
-        FROM attempts
-        WHERE "finished_at" >= ${startOfMonth} AND "finished_at" <= ${endOfMonth}
-        GROUP BY "user_id"
-        HAVING SUM(score) > ${userScore}
-      ) as higher_scores
-    `;
-
-        const rank = Number(rankResult[0].count) + 1;
+        // Count users with strictly higher XP → rank = that count + 1
+        const higherCount = await this.prisma.userStats.count({
+            where: { xp: { gt: userXp } },
+        });
 
         return {
             userId,
-            rank,
-            score: userScore,
-            month: startOfMonth.toLocaleString('default', { month: 'long' }),
-            year: startOfMonth.getFullYear(),
+            rank: higherCount + 1,
+            score: userXp,
         };
     }
 
-    async getQuizRank(quizId: number, score: number) {
-
-
-
-
-
-
+    async getQuizRank(quizId: number, score: number): Promise<number> {
         const count = await this.prisma.attempt.count({
             where: {
-                quizId: quizId,
+                quizId,
                 status: 'completed',
-                score: { gt: score }
-            }
+                score: { gt: score },
+            },
         });
 
         return count + 1;

@@ -3,12 +3,17 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCourseDto } from './dto';
 
 import { ContributionsService } from '../contributions/contributions.service';
+import { StatsService } from '../stats/stats.service';
 
 @Injectable()
 export class CoursesService {
+    // XP awarded per correctly answered course challenge
+    private static readonly CHALLENGE_XP = 10;
+
     constructor(
         private readonly prisma: PrismaService,
-        private readonly contributionsService: ContributionsService
+        private readonly contributionsService: ContributionsService,
+        private readonly statsService: StatsService,
     ) { }
 
     // Create a full course hierarchy
@@ -347,14 +352,16 @@ export class CoursesService {
             }
         });
 
-        // 3. Update User Stats / Currency (Simplified)
+        // 3. Update User Stats / Currency
         if (isCorrect) {
             // Log activity for heatmap
             await this.contributionsService.logActivity(userId);
+
+            // Award XP — this feeds UserStats.xp, which drives the leaderboard
+            await this.statsService.updateStats(userId, {
+                xp: CoursesService.CHALLENGE_XP,
+            });
         }
-        // else { 
-        //    deduct hearts?
-        // }
 
         return {
             correct: isCorrect,

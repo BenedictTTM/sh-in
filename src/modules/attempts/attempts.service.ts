@@ -1,28 +1,27 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   BadRequestException,
   ForbiddenException,
   ConflictException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PrismaService } from '../../prisma/prisma.service';
-import { SubmitAnswerDto } from './dto';
-import * as crypto from 'crypto';
-
 import { EnergyService } from '../energy/energy.service';
-import { StatsService } from '../stats/stats.service';
-import { LeaderboardService } from '../leaderboards/leaderboard.service';
+import { SubmitAnswerDto } from './dto';
+import { AttemptCompletedEvent } from './events';
 import { TransactionReason } from '../../common/enums/currency.enum';
-import { DiamondsService } from '../diamonds/diamonds.service';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AttemptsService {
+  private readonly logger = new Logger(AttemptsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly energyService: EnergyService,
-    private readonly statsService: StatsService,
-    private readonly leaderboardService: LeaderboardService,
-    private readonly diamondsService: DiamondsService,
+    private readonly eventEmitter: EventEmitter2,
   ) { }
 
   async startAttempt(
@@ -31,183 +30,129 @@ export class AttemptsService {
     ipAddress?: string,
     userAgent?: string,
   ) {
-    const quiz = await this.prisma.quiz.findUnique({
-      where: { id: quizId, deletedAt: null },
-      include: {
-        questions: {
-          select: {
-            id: true,
-            points: true,
+    return this.prisma.$transaction(async (tx) => {
+      const quiz = await tx.quiz.findUnique({
+        where: { id: quizId, deletedAt: null },
+        include: {
+          questions: {
+            select: { id: true, points: true },
+          },
+          attempts: {
+            where: {
+              userId,
+              status: { in: ['in_progress', 'completed'] },
+            },
+            select: { id: true, status: true, expiresAt: true, attemptToken: true, startedAt: true },
           },
         },
-        attempts: {
-          where: {
-            userId,
-            status: { in: ['in_progress', 'completed'] },
-          },
-          select: {
-            id: true,
-            status: true,
-          },
-        },
-      },
-    });
+      });
 
-    if (!quiz) {
-      throw new NotFoundException(`Quiz with ID ${quizId} not found`);
-    }
-
-
-
-
-
-
-
-    const previousQuiz = await this.prisma.quiz.findFirst({
-      where: {
-        isPublished: true,
-        deletedAt: null,
-        publishedAt: {
-          lt: quiz.publishedAt || new Date()
-        }
-      },
-      orderBy: {
-        publishedAt: 'desc'
+      if (!quiz) {
+        throw new NotFoundException(`Quiz with ID ${quizId} not found`);
       }
-    });
 
-    if (previousQuiz) {
-      const isPreviousCompleted = await this.prisma.attempt.count({
-        where: {
-          quizId: previousQuiz.id,
-          userId,
-          status: 'completed'
-        }
-      });
+      // Check for existing in-progress attempt
+      const existingAttempt = quiz.attempts.find(
+        (a) => a.status === 'in_progress',
+      );
 
+      if (existingAttempt) {
+        const now = new Date();
 
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // Check for existing in-progress attempts
-    const existingAttempt = quiz.attempts.find(
-      (a) => a.status === 'in_progress',
-    );
-
-    if (existingAttempt) {
-      // Check if expired
-      const now = new Date();
-
-      const fullAttempt = await this.prisma.attempt.findUnique({
-        where: { id: existingAttempt.id },
-      });
-
-      if (fullAttempt) {
-        if (fullAttempt.expiresAt && now > fullAttempt.expiresAt) {
-          // Expired - mark it and proceed to create new
-          await this.prisma.attempt.update({
-            where: { id: fullAttempt.id },
+        if (existingAttempt.expiresAt && now > existingAttempt.expiresAt) {
+          // Expired — mark it and proceed to create new
+          await tx.attempt.update({
+            where: { id: existingAttempt.id },
             data: { status: 'expired', finishedAt: now },
           });
         } else {
-          // Valid - RESUME IT
+          // Valid — resume it
+          this.logger.log(`Resuming attempt ${existingAttempt.id} for user ${userId}`);
           return {
-            attemptId: fullAttempt.id,
-            attemptToken: fullAttempt.attemptToken,
-            expiresAt: fullAttempt.expiresAt,
-            startedAt: fullAttempt.startedAt,
-            resumed: true
+            attemptId: existingAttempt.id,
+            attemptToken: existingAttempt.attemptToken,
+            expiresAt: existingAttempt.expiresAt,
+            startedAt: existingAttempt.startedAt,
+            resumed: true,
           };
         }
       }
-    }
 
-    // Check Max Attempts (optional but good practice since we have the data)
-    if (quiz.maxAttempts) {
-      const completedCount = quiz.attempts.filter(a => a.status === 'completed').length;
-      if (completedCount >= quiz.maxAttempts) {
-        throw new BadRequestException(`Maximum attempts (${quiz.maxAttempts}) reached for this quiz.`);
+      // Check max attempts
+      if (quiz.maxAttempts) {
+        const completedCount = quiz.attempts.filter(
+          (a) => a.status === 'completed',
+        ).length;
+        if (completedCount >= quiz.maxAttempts) {
+          throw new BadRequestException(
+            `Maximum attempts (${quiz.maxAttempts}) reached for this quiz.`,
+          );
+        }
       }
-    }
 
-    await this.energyService.consumeEnergy(userId, {
-      amount: 5,
-      reason: TransactionReason.QUIZ_PLAY,
+      await this.energyService.consumeEnergy(userId, {
+        amount: 5,
+        reason: TransactionReason.QUIZ_PLAY,
+      });
+
+      const maxScore = quiz.questions.reduce((sum, q) => sum + q.points, 0);
+      const attemptToken = this.generateAttemptToken(quizId, userId);
+      const expiresAt = quiz.timeLimit
+        ? new Date(Date.now() + quiz.timeLimit * 1000)
+        : null;
+
+      const attempt = await tx.attempt.create({
+        data: {
+          quizId,
+          userId,
+          attemptToken,
+          maxScore,
+          expiresAt,
+          ipAddress,
+          userAgent,
+        },
+        select: {
+          id: true,
+          attemptToken: true,
+          expiresAt: true,
+          startedAt: true,
+        },
+      });
+
+      this.logger.log(`Created attempt ${attempt.id} for user ${userId} on quiz ${quizId}`);
+
+      return {
+        attemptId: attempt.id,
+        attemptToken: attempt.attemptToken,
+        expiresAt: attempt.expiresAt,
+        startedAt: attempt.startedAt,
+      };
     });
-
-
-    const maxScore = quiz.questions.reduce((sum, q) => sum + q.points, 0);
-    const attemptToken = this.generateAttemptToken(quizId, userId);
-    const expiresAt = quiz.timeLimit
-      ? new Date(Date.now() + quiz.timeLimit * 1000)
-      : null;
-
-    const attempt = await this.prisma.attempt.create({
-      data: {
-        quizId,
-        userId,
-        attemptToken,
-        maxScore,
-        expiresAt,
-        ipAddress,
-        userAgent,
-      },
-      select: {
-        id: true,
-        attemptToken: true,
-        expiresAt: true,
-        startedAt: true,
-      },
-    });
-
-    return {
-      attemptId: attempt.id,
-      attemptToken: attempt.attemptToken,
-      expiresAt: attempt.expiresAt,
-      startedAt: attempt.startedAt,
-    };
   }
 
   async submitAnswer(
     attemptId: number,
     submitAnswerDto: SubmitAnswerDto,
     attemptToken: string,
+    userId: number,
   ) {
     const { questionId, selectedChoiceId, idempotencyKey } = submitAnswerDto;
 
+    // Fast-path: idempotency check
     const existingAnswer = await this.prisma.answer.findUnique({
       where: { idempotencyKey },
-      include: {
-        choice: true,
-      },
+      include: { choice: true },
     });
 
     if (existingAnswer) {
+      const attempt = await this.prisma.attempt.findUnique({
+        where: { id: attemptId },
+        select: { score: true },
+      });
       return {
         isCorrect: existingAnswer.isCorrect,
         pointsAwarded: existingAnswer.pointsAwarded,
-        currentScore:
-          (
-            await this.prisma.attempt.findUnique({
-              where: { id: attemptId },
-              select: { score: true },
-            })
-          )?.score || 0,
+        currentScore: attempt?.score || 0,
         cached: true,
       };
     }
@@ -237,6 +182,10 @@ export class AttemptsService {
       throw new NotFoundException(`Attempt with ID ${attemptId} not found`);
     }
 
+    if (attempt.userId !== userId) {
+      throw new ForbiddenException('Not authorized to submit to this attempt');
+    }
+
     if (attempt.attemptToken !== attemptToken) {
       throw new ForbiddenException('Invalid attempt token');
     }
@@ -261,14 +210,14 @@ export class AttemptsService {
       );
     }
 
-    const question = attempt.quiz.questions[0];
+    const question = attempt.quiz.questions.find((q) => q.id === questionId);
     if (!question) {
       throw new BadRequestException(
         `Question ${questionId} not found in quiz ${attempt.quizId}`,
       );
     }
 
-    const choice = question.choices[0];
+    const choice = question.choices.find((c) => c.id === selectedChoiceId);
     if (!choice) {
       throw new BadRequestException(
         `Choice ${selectedChoiceId} not found in question ${questionId}`,
@@ -293,12 +242,8 @@ export class AttemptsService {
 
         const updatedAttempt = await tx.attempt.update({
           where: { id: attemptId },
-          data: {
-            score: { increment: pointsAwarded },
-          },
-          select: {
-            score: true,
-          },
+          data: { score: { increment: pointsAwarded } },
+          select: { score: true },
         });
 
         return {
@@ -309,18 +254,14 @@ export class AttemptsService {
         };
       });
     } catch (error: any) {
+      // Handle unique constraint race condition
       if (error.code === 'P2002') {
         const existing = await this.prisma.answer.findUnique({
           where: {
-            attemptId_questionId: {
-              attemptId,
-              questionId,
-            },
+            attemptId_questionId: { attemptId, questionId },
           },
           include: {
-            attempt: {
-              select: { score: true },
-            },
+            attempt: { select: { score: true } },
           },
         });
 
@@ -342,18 +283,10 @@ export class AttemptsService {
       where: { id: attemptId },
       include: {
         quiz: {
-          select: {
-            id: true,
-            title: true,
-            passingScore: true,
-          },
+          select: { id: true, title: true, passingScore: true },
         },
         answers: {
-          select: {
-            id: true,
-            isCorrect: true,
-            pointsAwarded: true,
-          },
+          select: { id: true, isCorrect: true, pointsAwarded: true },
         },
       },
     });
@@ -370,6 +303,7 @@ export class AttemptsService {
       throw new ForbiddenException('Invalid attempt token');
     }
 
+    // Idempotent: if already completed, return existing result
     if (attempt.status === 'completed') {
       return this.getAttemptResult(attemptId, userId);
     }
@@ -385,70 +319,33 @@ export class AttemptsService {
       ? attempt.score >= attempt.quiz.passingScore
       : true;
 
-    console.log(`[AttemptsService] Finishing attempt ${attemptId} for user ${userId}. Score: ${attempt.score}/${attempt.maxScore}, Passing Score: ${attempt.quiz.passingScore}, Passed: ${passed}`);
+    const totalAnswers = attempt.answers.length;
+    const correctAnswers = attempt.answers.filter((a) => a.isCorrect).length;
 
+    // Core update — mark as completed
     await this.prisma.attempt.update({
       where: { id: attemptId },
-      data: {
-        status: 'completed',
-        finishedAt,
-      },
+      data: { status: 'completed', finishedAt },
     });
 
+    this.logger.log(
+      `Attempt ${attemptId} completed — user=${userId}, score=${attempt.score}/${attempt.maxScore}, passed=${passed}`,
+    );
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    await this.prisma.userActivityLog.upsert({
-      where: {
-        userId_activityDate: {
-          userId,
-          activityDate: today,
-        },
-      },
-      update: {
-        quizzesSolved: { increment: 1 },
-      },
-      create: {
+    // Emit event — all side effects happen asynchronously in the listener
+    this.eventEmitter.emit(
+      'attempt.completed',
+      new AttemptCompletedEvent(
         userId,
-        activityDate: today,
-        quizzesSolved: 1,
-      },
-    });
-
-
-    await this.statsService.updateStats(userId, {
-      xp: attempt.score,
-      gems: passed ? 10 : 1,
-    });
-
-    if (passed) {
-      console.log(`[AttemptsService] User passed. Updating level for quiz ${attempt.quiz.id}...`);
-      await this.statsService.updateLevel(userId, attempt.quiz.id);
-    } else {
-      console.log(`[AttemptsService] User failed. Level not updated.`);
-    }
-
-    await this.statsService.updateStreak(userId);
-
-
-    // this.updateLeaderboard(userId, attempt.quiz.id, attempt.score); // Old method, remove or keep logging?
-
-
-    const rank = await this.leaderboardService.getQuizRank(attempt.quiz.id, attempt.score);
-    if (rank <= 3) {
-      await this.statsService.incrementTop3(userId);
-    }
-
-
-    if (attempt.score === attempt.maxScore && attempt.maxScore > 0) {
-      await this.diamondsService.grantDiamonds(userId, 1, TransactionReason.REWARD, {
-        quizId: attempt.quiz.id,
-        score: attempt.score,
-        details: 'Perfect Score Reward'
-      });
-      console.log(`[AttemptsService] User ${userId} achieved perfect score! Granted 1 Diamond.`);
-    }
+        attempt.quiz.id,
+        attemptId,
+        attempt.score,
+        attempt.maxScore,
+        passed,
+        totalAnswers,
+        correctAnswers,
+      ),
+    );
 
     return {
       attemptId,
@@ -456,8 +353,8 @@ export class AttemptsService {
       maxScore: attempt.maxScore,
       passed,
       passingScore: attempt.quiz.passingScore,
-      totalQuestions: attempt.answers.length,
-      correctAnswers: attempt.answers.filter((a) => a.isCorrect).length,
+      totalQuestions: totalAnswers,
+      correctAnswers,
       finishedAt,
     };
   }
@@ -485,25 +382,15 @@ export class AttemptsService {
                 points: true,
                 choices: {
                   where: { isCorrect: true },
-                  select: {
-                    id: true,
-                    text: true,
-                    isCorrect: true,
-                  },
+                  select: { id: true, text: true, isCorrect: true },
                 },
               },
             },
             choice: {
-              select: {
-                id: true,
-                text: true,
-                isCorrect: true,
-              },
+              select: { id: true, text: true, isCorrect: true },
             },
           },
-          orderBy: {
-            createdAt: 'asc',
-          },
+          orderBy: { createdAt: 'asc' },
         },
       },
     });
@@ -563,7 +450,6 @@ export class AttemptsService {
           choiceText: answer.choice.text,
         },
         isCorrect: answer.isCorrect,
-
         pointsAwarded: answer.pointsAwarded,
         maxPoints: answer.question.points,
       })),
@@ -575,15 +461,5 @@ export class AttemptsService {
     const random = crypto.randomBytes(16).toString('hex');
     const payload = `${quizId}:${userId}:${timestamp}:${random}`;
     return crypto.createHash('sha256').update(payload).digest('hex');
-  }
-
-  private updateLeaderboard(
-    userId: number,
-    quizId: number,
-    score: number,
-  ): void {
-    console.log(
-      `[Leaderboard] User ${userId} scored ${score} on quiz ${quizId}`,
-    );
   }
 }

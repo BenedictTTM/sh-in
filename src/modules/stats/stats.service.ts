@@ -40,11 +40,16 @@ export class StatsService {
     }
 
     async updateStats(userId: number, data: { xp?: number; gems?: number }) {
-        return this.prisma.userStats.update({
+        return this.prisma.userStats.upsert({
             where: { userId },
-            data: {
+            update: {
                 xp: data.xp ? { increment: data.xp } : undefined,
                 gems: data.gems ? { increment: data.gems } : undefined,
+            },
+            create: {
+                userId,
+                xp: data.xp ?? 0,
+                gems: data.gems ?? 0,
             },
         });
     }
