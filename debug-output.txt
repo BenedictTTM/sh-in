@@ -1,0 +1,21 @@
+﻿
+===== USERS =====
+  id=2 email=user@example.com name=Test User googleId=null
+  id=3 email=palomakut1@gmail.com name=Ben Afotey googleId=null
+  id=6 email=papaansah15@gmail.com name=Osei Ansah googleId=null
+  id=7 email=fi@gmail.com name=Fi Fi googleId=null
+
+===== USER STATS =====
+  userId=2 (user@example.com) xp=1300 gems=50 level=5 streak=47 energy=5
+  userId=3 (palomakut1@gmail.com) xp=0 gems=0 level=1 streak=0 energy=30
+  userId=6 (papaansah15@gmail.com) xp=0 gems=0 level=1 streak=0 energy=5
+  userId=7 (fi@gmail.com) xp=0 gems=0 level=1 streak=0 energy=5
+
+===== ACTIVITY LOGS =====
+  userId=2 (user@example.com) date=2026-02-22 quizzes=9
+  userId=2 (user@example.com) date=2026-01-16 quizzes=2
+  userId=2 (user@example.com) date=2026-01-02 quizzes=4
+  Total: 3 entries
+
+===== RECENT ATTEMPTS =====
+  id=1 userId=3 (palomakut1@gmail.com) quiz="WACCES 2011 ÔÇô Practice Quiz Set 2" status=in_progress score=2/12

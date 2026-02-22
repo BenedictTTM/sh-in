@@ -14,7 +14,7 @@ export class ContributionsController {
 
     @Post('sync')
     @HttpCode(HttpStatus.OK)
-    async syncContributions(@Request() req) {
+    asyn(@Request() req) {
         return this.contributionsService.syncUserContributions(req.user.id);
     }
 }

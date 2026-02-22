@@ -3,6 +3,7 @@ import { CoursesService } from './courses.service';
 import { CreateCourseDto, CreateUnitDto, CreateLessonDto } from './dto';
 import { UseGuards } from '@nestjs/common';
 import { OptionalJwtAuthGuard } from '../../common/guards/optional-jwt-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 @Controller({ path: 'courses', version: '1' })
 export class CoursesController {
@@ -52,22 +53,16 @@ export class CoursesController {
     // Progress Tracking Endpoints
 
     @Post('challenges/check')
+    @UseGuards(JwtAuthGuard)
     async checkChallenge(@Body() body: { challengeId: number; optionId: number }, @Request() req: any) {
-        // Assuming AuthGuard is used and req.user.id exists. 
-        // If not, we might need to assume a userId or add the guard. 
-        let userId = req.user?.id;
-
-        if (!userId) {
-            const debugUser = await this.coursesService.getDebugUser();
-            userId = debugUser?.id || 1;
-        }
-
+        const userId = req.user.id;
         return this.coursesService.checkChallenge(userId, body);
     }
 
     @Get(':id/progress')
+    @UseGuards(JwtAuthGuard)
     getUserProgress(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
-        const userId = req.user?.id || 1;
+        const userId = req.user.id;
         return this.coursesService.getUserProgress(userId, id);
     }
 

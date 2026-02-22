@@ -134,33 +134,6 @@ export class CoursesService {
             select: { challengeId: true }
         });
 
-        // Debug/Dev "Smart Fallback": If current user has NO progress, try to borrow from "Debug User".
-        // This solves the common issue where a dev logs in as a new user but wants to see unlocked content from previous tests.
-        if (progress.length === 0) {
-            const debugUser = await this.getDebugUser();
-            if (debugUser && debugUser.id !== userId) {
-                const debugProgress = await this.prisma.challengeProgress.findMany({
-                    where: {
-                        userId: debugUser.id,
-                        isCompleted: true,
-                        challenge: {
-                            lesson: {
-                                unit: {
-                                    courseId: id
-                                }
-                            }
-                        }
-                    },
-                    select: { challengeId: true }
-                });
-
-                if (debugProgress.length > 0) {
-                    console.log(`[CoursesService] User ${userId} has 0 progress. Inheriting ${debugProgress.length} items from Debug User ${debugUser.id} for testing.`);
-                    progress = debugProgress;
-                }
-            }
-        }
-
         const completedChallengeIds = new Set(progress.map(p => p.challengeId));
 
         // Enrich course data with completion status

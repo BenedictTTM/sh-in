@@ -28,6 +28,8 @@ export class JwtAuthGuard implements CanActivate {
                 email: payload.email,
                 role: payload.role
             };
+
+            console.log(`[JwtAuthGuard] ${request.method} ${request.url} → userId=${payload.sub}, email=${payload.email}`);
         } catch (error) {
             console.log(`[JwtAuthGuard] Token validation failed for ${request.method} ${request.url}`);
             throw new UnauthorizedException('Invalid or expired token');
