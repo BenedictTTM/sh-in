@@ -30,6 +30,7 @@ export enum TransactionReason {
 
     AUTO_REGENERATION = 'auto_regeneration',
     QUIZ_PLAY = 'quiz_play',
+    LESSON_PLAY = 'lesson_play',
     DIAMOND_PURCHASE = 'diamond_purchase',
     ADMIN_GRANT = 'admin_grant',
 

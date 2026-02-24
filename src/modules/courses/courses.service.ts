@@ -1,19 +1,25 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCourseDto } from './dto';
 
 import { ContributionsService } from '../contributions/contributions.service';
 import { StatsService } from '../stats/stats.service';
+import { EnergyService } from '../energy/energy.service';
+import { TransactionReason } from '../../common/enums/currency.enum';
 
 @Injectable()
 export class CoursesService {
+    private readonly logger = new Logger(CoursesService.name);
     // XP awarded per correctly answered course challenge
     private static readonly CHALLENGE_XP = 10;
+    // Energy cost to start a lesson
+    private static readonly LESSON_ENERGY_COST = 5;
 
     constructor(
         private readonly prisma: PrismaService,
         private readonly contributionsService: ContributionsService,
         private readonly statsService: StatsService,
+        private readonly energyService: EnergyService,
     ) { }
 
     // Create a full course hierarchy
@@ -375,7 +381,59 @@ export class CoursesService {
 
     }
 
-    // Get Single Lesson with Challenges
+    // Start a Lesson — deducts energy and returns lesson with challenges
+    async startLesson(userId: number, lessonId: number) {
+        this.logger.log(`[startLesson] User ${userId} starting lesson ${lessonId}`);
+
+        // 1. Verify lesson exists
+        const lesson = await this.prisma.lesson.findUnique({
+            where: { id: lessonId },
+            include: {
+                challenges: {
+                    orderBy: { order: 'asc' },
+                    include: {
+                        options: true
+                    }
+                }
+            }
+        });
+
+        if (!lesson) {
+            this.logger.warn(`[startLesson] Lesson ${lessonId} not found`);
+            throw new NotFoundException('Lesson not found');
+        }
+
+        this.logger.log(`[startLesson] Lesson "${lesson.title}" found with ${lesson.challenges.length} challenges`);
+
+        // 2. Check & consume energy
+        const { energy: currentEnergy } = await this.energyService.getEnergy(userId);
+        this.logger.log(`[startLesson] User ${userId} current energy: ${currentEnergy}, required: ${CoursesService.LESSON_ENERGY_COST}`);
+
+        if (currentEnergy < CoursesService.LESSON_ENERGY_COST) {
+            this.logger.warn(`[startLesson] User ${userId} has insufficient energy (${currentEnergy}/${CoursesService.LESSON_ENERGY_COST})`);
+            throw new BadRequestException(
+                `Insufficient energy. Required: ${CoursesService.LESSON_ENERGY_COST}, Available: ${currentEnergy}`
+            );
+        }
+
+        await this.energyService.consumeEnergy(userId, {
+            amount: CoursesService.LESSON_ENERGY_COST,
+            reason: TransactionReason.LESSON_PLAY,
+            metadata: { lessonId, lessonTitle: lesson.title },
+        });
+
+        const { energy: newEnergy } = await this.energyService.getEnergy(userId);
+        this.logger.log(`[startLesson] Energy consumed. User ${userId} energy after deduction: ${newEnergy}`);
+
+        // 3. Return lesson data + energy info
+        return {
+            ...lesson,
+            energyConsumed: CoursesService.LESSON_ENERGY_COST,
+            remainingEnergy: newEnergy,
+        };
+    }
+
+    // Get Single Lesson with Challenges (no energy cost — used for resuming)
     async findLesson(id: number) {
         const lesson = await this.prisma.lesson.findUnique({
             where: { id },

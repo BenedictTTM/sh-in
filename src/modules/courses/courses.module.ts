@@ -6,9 +6,10 @@ import { AuthModule } from '../auth/auth.module';
 
 import { ContributionsModule } from '../contributions/contributions.module';
 import { StatsModule } from '../stats/stats.module';
+import { EnergyModule } from '../energy/energy.module';
 
 @Module({
-    imports: [PrismaModule, AuthModule, ContributionsModule, StatsModule],
+    imports: [PrismaModule, AuthModule, ContributionsModule, StatsModule, EnergyModule],
     controllers: [CoursesController],
     providers: [CoursesService],
     exports: [CoursesService],

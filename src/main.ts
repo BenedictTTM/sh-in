@@ -3,7 +3,14 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  let app;
+  try {
+    app = await NestFactory.create(AppModule);
+  } catch (error) {
+    console.error('❌ Failed to start application:', error.message);
+    console.error('   Tip: Make sure your database is reachable and DATABASE_URL is set correctly.');
+    process.exit(1);
+  }
 
 
   const envOrigins = process.env.CORS_ORIGINS?.split(',') || [];
@@ -36,4 +43,7 @@ async function bootstrap() {
   await app.listen(port);
   console.log(`🚀 Application is running on: http://localhost:${port}`);
 }
-void bootstrap();
+bootstrap().catch((err) => {
+  console.error('❌ Unhandled bootstrap error:', err.message);
+  process.exit(1);
+});

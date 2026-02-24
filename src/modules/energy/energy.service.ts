@@ -19,13 +19,13 @@ export class EnergyService {
     constructor(private readonly prisma: PrismaService) { }
 
 
-    async getEnergy(userId: number): Promise<{ energy: number; maxEnergy: number; nextRefillAt: Date | null }> {
-        let stats = await this.prisma.userStats.findUnique({
+    async getEnergy(userId: number, tx?: any): Promise<{ energy: number; maxEnergy: number; nextRefillAt: Date | null }> {
+        const prisma = tx || this.prisma;
+        let stats = await prisma.userStats.findUnique({
             where: { userId },
         });
 
         if (!stats) {
-
             return { energy: 0, maxEnergy: this.MAX_ENERGY_DEFAULT, nextRefillAt: null };
         }
 
@@ -46,7 +46,7 @@ export class EnergyService {
                 const newRefillDate = new Date(lastRefill.getTime() + timeUsed);
 
 
-                stats = await this.prisma.userStats.update({
+                stats = await prisma.userStats.update({
                     where: { userId },
                     data: {
                         energy: newEnergy,
@@ -57,7 +57,7 @@ export class EnergyService {
                 this.logger.log(`Regenerated ${energyToGrant} energy for user ${userId}. New balance: ${newEnergy}`);
 
 
-                await this.prisma.currencyTransaction.create({
+                await prisma.currencyTransaction.create({
                     data: {
                         userId,
                         currency: CurrencyType.ENERGY,
@@ -101,51 +101,59 @@ export class EnergyService {
     async consumeEnergy(
         userId: number,
         params: { amount: number; reason: TransactionReason; metadata?: any },
+        tx?: any
     ): Promise<boolean> {
-
-        const { energy } = await this.getEnergy(userId);
+        const prisma = tx || this.prisma;
+        // 1. Get current energy state (handles regeneration if needed)
+        // Pass the transaction context to ensure we continually use the same connection
+        const { energy } = await this.getEnergy(userId, prisma);
 
         if (energy < params.amount) {
             throw new BadRequestException(`Insufficient energy. Required: ${params.amount}, Available: ${energy}`);
         }
 
-
-        await this.prisma.$transaction(async (tx) => {
-
-
-            const stats = await tx.userStats.findUnique({ where: { userId } });
+        const execute = async (txClient: any) => {
+            // Fetch stats inside the transaction to ensure we have the latest state (and lock if needed by update later)
+            const stats = await txClient.userStats.findUnique({ where: { userId } });
 
             if (!stats) {
                 throw new BadRequestException('User stats not found');
             }
 
+            if (stats.energy < params.amount) {
+                throw new BadRequestException(`Insufficient energy. Required: ${params.amount}, Available: ${stats.energy}`);
+            }
+
             const wasFull = stats.energy >= this.MAX_ENERGY_DEFAULT;
 
-
-            const updatedStats = await tx.userStats.update({
+            const updatedStats = await txClient.userStats.update({
                 where: { userId },
                 data: {
                     energy: { decrement: params.amount },
-
-
                     lastEnergyRefillAt: wasFull ? new Date() : undefined,
                 },
             });
 
 
-            await tx.currencyTransaction.create({
+            await txClient.currencyTransaction.create({
                 data: {
                     userId,
                     currency: CurrencyType.ENERGY,
                     type: TransactionType.ENERGY_CONSUME,
                     amount: -params.amount,
-                    balanceBefore: energy,
+                    balanceBefore: stats.energy,
                     balanceAfter: updatedStats.energy,
                     reason: params.reason,
                     metadata: params.metadata || {},
                 },
             });
-        });
+        };
+
+        if (tx) {
+            await execute(tx);
+        } else {
+            await this.prisma.$transaction(execute);
+        }
 
         return true;
     }

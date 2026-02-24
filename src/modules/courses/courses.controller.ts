@@ -66,6 +66,13 @@ export class CoursesController {
         return this.coursesService.getUserProgress(userId, id);
     }
 
+    @Post('lessons/:id/start')
+    @UseGuards(JwtAuthGuard)
+    async startLesson(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
+        const userId = req.user.id;
+        return this.coursesService.startLesson(userId, id);
+    }
+
     @Get('lessons/:id')
     findLesson(@Param('id', ParseIntPipe) id: number) {
         return this.coursesService.findLesson(id);

@@ -90,10 +90,14 @@ export class AttemptsService {
         }
       }
 
-      await this.energyService.consumeEnergy(userId, {
-        amount: 5,
-        reason: TransactionReason.QUIZ_PLAY,
-      });
+      await this.energyService.consumeEnergy(
+        userId,
+        {
+          amount: 5,
+          reason: TransactionReason.QUIZ_PLAY,
+        },
+        tx, // Pass the transaction client to ensure atomicity
+      );
 
       const maxScore = quiz.questions.reduce((sum, q) => sum + q.points, 0);
       const attemptToken = this.generateAttemptToken(quizId, userId);
